@@ -1,0 +1,293 @@
+'use client';
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Heart, MessageCircle, Trash2, Flag, Send } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { formatDistanceToNow } from 'date-fns';
+
+interface PostCardProps {
+  post: {
+    id: string;
+    caption: string;
+    author: {
+      id: string;
+      profile: {
+        displayName: string;
+        avatar: string;
+      };
+    };
+    media: Array<{
+      id: string;
+      url: string;
+      mediaType: string;
+    }>;
+    likeCount: number;
+    commentCount: number;
+    isNsfw: boolean;
+    hashtags: string[];
+    createdAt: string;
+    liked?: boolean;
+  };
+  onDelete?: (postId: string) => void;
+  onLike?: (postId: string) => void;
+  currentUserId?: string;
+}
+
+export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProps) {
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentText, setCommentText] = useState('');
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  const loadComments = async () => {
+    if (isLoadingComments || comments.length > 0) return;
+
+    setIsLoadingComments(true);
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comments`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const data = await response.json();
+      setComments(data);
+    } catch (error) {
+      console.error('[v0] Failed to load comments:', error);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
+  const handleShowComments = () => {
+    setShowComments(!showComments);
+    if (!showComments) {
+      loadComments();
+    }
+  };
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ content: commentText }),
+      });
+
+      if (response.ok) {
+        const newComment = await response.json();
+        setComments([...comments, newComment]);
+        setCommentText('');
+      }
+    } catch (error) {
+      console.error('[v0] Failed to submit comment:', error);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const isOwner = currentUserId === post.author.id;
+
+  return (
+    <Card className="border-border mb-6 overflow-hidden hover:border-primary/50 transition">
+      {/* Post Header */}
+      <CardHeader className="pb-3 border-b border-border">
+        <div className="flex items-center justify-between">
+          <Link href={`/profile/${post.author.id}`} className="flex items-center gap-3 hover:opacity-80">
+            <div className="w-10 h-10 rounded-full bg-muted overflow-hidden relative">
+              {post.author.profile.avatar ? (
+                <Image
+                  src={post.author.profile.avatar}
+                  alt={post.author.profile.displayName}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
+                  {post.author.profile.displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-foreground">{post.author.profile.displayName}</p>
+              <p className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+              </p>
+            </div>
+          </Link>
+          {isOwner && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete?.(post.id)}
+              className="text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+          {!isOwner && (
+            <Button variant="ghost" size="sm" className="text-muted-foreground">
+              <Flag className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+
+      {/* Post Content */}
+      <CardContent className="space-y-3 pt-4">
+        {/* Caption */}
+        <p className="text-foreground whitespace-pre-wrap">{post.caption}</p>
+
+        {/* Media */}
+        {post.media.length > 0 && (
+          <div className={`grid gap-2 ${post.media.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {post.media.map((item) => (
+              <div key={item.id} className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
+                {item.mediaType.startsWith('image') ? (
+                  <Image
+                    src={item.url}
+                    alt="Post media"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <video
+                    src={item.url}
+                    className="w-full h-full object-cover"
+                    controls
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* NSFW Badge */}
+        {post.isNsfw && (
+          <div className="inline-block px-2 py-1 bg-destructive/10 text-destructive text-xs font-semibold rounded">
+            NSFW
+          </div>
+        )}
+
+        {/* Hashtags */}
+        {post.hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {post.hashtags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/search?hashtag=${tag}`}
+                className="text-primary hover:underline text-sm"
+              >
+                #{tag}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Engagement Stats */}
+        <div className="flex gap-4 text-sm text-muted-foreground border-t border-border pt-3">
+          <span>{post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</span>
+          <span>{post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}</span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 border-t border-border pt-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex-1 gap-2"
+            onClick={() => onLike?.(post.id)}
+          >
+            <Heart
+              className={`w-4 h-4 ${post.liked ? 'fill-destructive text-destructive' : ''}`}
+            />
+            {post.liked ? 'Unlike' : 'Like'}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex-1 gap-2"
+            onClick={handleShowComments}
+          >
+            <MessageCircle className="w-4 h-4" />
+            Comment
+          </Button>
+        </div>
+      </CardContent>
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="border-t border-border bg-muted/30">
+          {/* Comments List */}
+          <div className="p-4 space-y-3 max-h-64 overflow-y-auto">
+            {comments.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No comments yet</p>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-2">
+                  <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden relative">
+                    {comment.author?.profile?.avatar ? (
+                      <Image
+                        src={comment.author.profile.avatar}
+                        alt={comment.author.profile.displayName}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-bold">
+                        {comment.author?.profile?.displayName?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      {comment.author?.profile?.displayName}
+                    </p>
+                    <p className="text-sm text-foreground bg-muted rounded px-3 py-2">
+                      {comment.content}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Comment Input */}
+          <form
+            onSubmit={handleSubmitComment}
+            className="p-4 border-t border-border flex gap-2"
+          >
+            <Input
+              placeholder="Write a comment..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              className="flex-1 bg-background border-border"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSubmittingComment || !commentText.trim()}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </form>
+        </div>
+      )}
+    </Card>
+  );
+}
