@@ -1,4 +1,4 @@
-# Connect - Dating & Social Platform
+# ConnectX - Dating & Social Platform
 
 A modern, inclusive platform for dating, hookups, relationships, and meaningful connections with advanced safety features, live streaming, and real-time chat.
 
