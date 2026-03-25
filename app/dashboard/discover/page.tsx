@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DiscoverCard } from '@/components/discover-card';
+import { PreferenceEditor } from '@/components/preference-editor';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface DiscoverUser {
@@ -103,10 +104,19 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
       <div className="max-w-2xl mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-2">Discover</h1>
-        <p className="text-muted-foreground mb-8">
-          {currentIndex + 1} of {users.length} matches
-        </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Discover</h1>
+            <p className="text-muted-foreground">
+              {users.length > 0 ? `${currentIndex + 1} of ${users.length} matches` : 'Finding matches...'}
+            </p>
+          </div>
+        </div>
+
+        {/* Preference Editor */}
+        <div className="mb-8">
+          <PreferenceEditor onSave={() => fetchRecommendations()} />
+        </div>
 
         {currentUser && (
           <DiscoverCard
