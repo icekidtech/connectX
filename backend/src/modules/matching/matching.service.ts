@@ -170,15 +170,15 @@ export class MatchingService {
       }));
   }
 
-  async blockUser(blockerId: string, blockedId: string) {
+  async blockUser(blockerId: string, blockedUserId: string) {
     let block = await this.blockRepository.findOne({
-      where: { blockerId, blockedId },
+      where: { blockerId, blockedUserId },
     });
 
     if (!block) {
       block = this.blockRepository.create({
         blockerId,
-        blockedId,
+        blockedUserId,
       });
       await this.blockRepository.save(block);
     }
