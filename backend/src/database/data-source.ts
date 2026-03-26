@@ -22,12 +22,12 @@ import { Notification } from '../modules/notifications/entities/notification.ent
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 5432,
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'dating_platform',
-  synchronize: process.env.NODE_ENV !== 'production',
-  logging: process.env.NODE_ENV !== 'production',
+  port: (process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432),
+  username: process.env.DB_USER || '',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || '',
+  synchronize: process.env.NODE_ENV !== '',
+  logging: process.env.NODE_ENV !== '',
   entities: [
     User,
     UserProfile,
