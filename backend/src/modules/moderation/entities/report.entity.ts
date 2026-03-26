@@ -12,20 +12,20 @@ import { User } from '../../users/entities/user.entity';
 @Entity('reports')
 export class Report {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'reporter_id' })
-  reporter: User;
+  reporter!: User;
 
   @Column()
-  reporterId: string;
-
-  @Column()
-  reportedUserId: string;
+  reporterId!: string;
 
   @Column({ nullable: true })
-  reportedPostId: string;
+  reportedUserId?: string;
+
+  @Column({ nullable: true })
+  reportedPostId?: string;
 
   @Column({
     type: 'enum',
@@ -40,34 +40,34 @@ export class Report {
       'other',
     ],
   })
-  category: string;
+  category!: string;
 
   @Column()
-  description: string;
+  description!: string;
 
   @Column('simple-array', { nullable: true })
-  evidence: string[];
+  evidence?: string[];
 
   @Column({
     type: 'enum',
     enum: ['pending', 'under_review', 'resolved', 'dismissed'],
     default: 'pending',
   })
-  status: 'pending' | 'under_review' | 'resolved' | 'dismissed';
+  status!: 'pending' | 'under_review' | 'resolved' | 'dismissed';
 
   @Column({ nullable: true })
-  resolution: string;
+  resolution?: string;
 
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'moderator_id' })
-  moderator: User;
+  moderator?: User;
 
   @Column({ nullable: true })
-  moderatorId: string;
+  moderatorId?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
