@@ -4,22 +4,22 @@ import { User } from './user.entity';
 @Entity('blocks')
 export class Block {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ManyToOne(() => User, (user) => user.blockedUsers, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'blocker_id' })
-  blocker: User;
+  blocker!: User;
 
   @Column()
-  blockerId: string;
+  blockerId!: string;
 
   @ManyToOne(() => User, (user) => user.blockedByUsers, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'blocked_user_id' })
-  blockedUser: User;
+  blockedUser!: User;
 
   @Column()
-  blockedUserId: string;
+  blockedUserId!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }
