@@ -12,53 +12,53 @@ import { User } from '../../users/entities/user.entity';
 @Entity('user_verifications')
 export class UserVerification {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user!: User;
 
   @Column()
-  userId: string;
+  userId!: string;
 
   @Column({ nullable: true })
-  photoVerificationImageUrl: string;
+  photoVerificationImageUrl?: string;
 
   @Column({ nullable: true })
-  photoVerificationPublicId: string;
+  photoVerificationPublicId?: string;
 
   @Column({
     type: 'enum',
     enum: ['pending', 'verified', 'rejected'],
     default: 'pending',
   })
-  photoVerificationStatus: 'pending' | 'verified' | 'rejected';
+  photoVerificationStatus!: 'pending' | 'verified' | 'rejected';
 
   @Column({ nullable: true })
-  photoVerificationRejectionReason: string;
+  photoVerificationRejectionReason?: string;
 
   @Column({ nullable: true })
-  idVerificationImageUrl: string;
+  idVerificationImageUrl?: string;
 
   @Column({ nullable: true })
-  idVerificationPublicId: string;
+  idVerificationPublicId?: string;
 
   @Column({
     type: 'enum',
     enum: ['pending', 'verified', 'rejected'],
     default: 'pending',
   })
-  idVerificationStatus: 'pending' | 'verified' | 'rejected';
+  idVerificationStatus!: 'pending' | 'verified' | 'rejected';
 
   @Column({ nullable: true })
-  idVerificationRejectionReason: string;
+  idVerificationRejectionReason?: string;
 
   @Column({ default: 0 })
-  verificationScore: number;
+  verificationScore!: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
