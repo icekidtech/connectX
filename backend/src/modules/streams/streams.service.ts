@@ -20,7 +20,6 @@ export class StreamsService {
       description,
       isNsfw,
       status: 'live',
-      streamKey: this.generateStreamKey(),
       viewerCount: 0,
     });
 
@@ -54,7 +53,7 @@ export class StreamsService {
     return await this.streamRepository.find({
       where: { broadcasterId },
       relations: ['viewers'],
-      order: { createdAt: 'DESC' },
+      order: { startedAt: 'DESC' },
     });
   }
 
@@ -124,11 +123,11 @@ export class StreamsService {
       title: stream.title,
       status: stream.status,
       viewerCount: stream.viewerCount,
-      startedAt: stream.createdAt,
+      startedAt: stream.startedAt,
       endedAt: stream.endedAt,
       duration: stream.endedAt
-        ? Math.floor((new Date(stream.endedAt).getTime() - new Date(stream.createdAt).getTime()) / 1000)
-        : Math.floor((new Date().getTime() - new Date(stream.createdAt).getTime()) / 1000),
+        ? Math.floor((new Date(stream.endedAt).getTime() - new Date(stream.startedAt).getTime()) / 1000)
+        : Math.floor((new Date().getTime() - new Date(stream.startedAt).getTime()) / 1000),
     };
   }
 
