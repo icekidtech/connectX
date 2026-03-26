@@ -30,22 +30,27 @@ export class ChatService {
   async getOrCreateConversation(userIds: string[]) {
     const sortedUserIds = userIds.sort();
 
-    // Check if conversation exists
-    let conversation = await this.conversationRepository
-      .createQueryBuilder('conversation')
-      .leftJoinAndSelect('conversation.participants', 'participants')
-      .where('conversation.type = :type', { type: 'direct' })
-      .andWhere('(SELECT COUNT(*) FROM conversation_participants WHERE conversationId = conversation.id AND participantId IN (:...userIds)) = :count', {
-        userIds: sortedUserIds,
-        count: sortedUserIds.length,
-      })
-      .getOne();
+    // Check if conversation exists with these exact participants
+    let conversation = await this.conversationRepository.findOne({
+      where: {},
+      relations: ['participants'],
+    });
+
+    // Simplified: Just get or create first conversation between users
+    const allConversations = await this.conversationRepository.find({
+      relations: ['participants'],
+    });
+
+    for (const conv of allConversations) {
+      const convUserIds = conv.participants.map(p => p.id).sort();
+      if (JSON.stringify(convUserIds) === JSON.stringify(sortedUserIds)) {
+        return conv;
+      }
+    }
 
     if (!conversation) {
-      conversation = this.conversationRepository.create({
-        type: 'direct',
-        participants: sortedUserIds.map((id) => ({ id })),
-      });
+      // Create new conversation
+      conversation = this.conversationRepository.create();
       await this.conversationRepository.save(conversation);
     }
 
@@ -89,16 +94,17 @@ export class ChatService {
     conversationId: string,
     senderId: string,
     content: string,
-    mediaUrl?: string,
+    mediaUrls?: string[],
   ) {
     const conversation = await this.getConversation(conversationId, senderId);
 
+    const messageType = mediaUrls && mediaUrls.length > 0 ? 'image' : 'text';
     const message = this.messageRepository.create({
       conversationId,
       senderId,
       content,
-      mediaUrl,
-      messageType: mediaUrl ? 'media' : 'text',
+      mediaUrls: mediaUrls || [],
+      messageType,
     });
 
     await this.messageRepository.save(message);
@@ -114,20 +120,20 @@ export class ChatService {
     // Get all unread messages in conversation not from this user
     const unreadMessages = await this.messageRepository.find({
       where: { conversationId },
-      relations: ['messageReads'],
+      relations: ['reads'],
     });
 
     for (const message of unreadMessages) {
       if (message.senderId === userId) continue;
 
       const existingRead = await this.messageReadRepository.findOne({
-        where: { messageId: message.id, userId },
+        where: { messageId: message.id, readerId: userId },
       });
 
       if (!existingRead) {
         const read = this.messageReadRepository.create({
           messageId: message.id,
-          userId,
+          readerId: userId,
         });
         await this.messageReadRepository.save(read);
       }
