@@ -40,7 +40,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       conversationId: string;
       senderId: string;
       content: string;
-      mediaUrl?: string;
+      mediaUrls?: string[];
     },
   ) {
     try {
@@ -48,14 +48,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         data.conversationId,
         data.senderId,
         data.content,
-        data.mediaUrl,
+        data.mediaUrls,
       );
       this.server.to(data.conversationId).emit('newMessage', {
         id: message.id,
         conversationId: message.conversationId,
         senderId: message.senderId,
         content: message.content,
-        mediaUrl: message.mediaUrl,
+        mediaUrls: message.mediaUrls,
         messageType: message.messageType,
         createdAt: message.createdAt,
       });
