@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { PostLike } from './entities/post-like.entity';
 import { PostComment } from './entities/post-comment.entity';
@@ -124,7 +124,7 @@ export class PostsService {
 
   async getPostComments(postId: string, page: number = 1, limit: number = 10) {
     return await this.postCommentRepository.find({
-      where: { postId, parentCommentId: null },
+      where: { postId, parentCommentId: IsNull() },
       skip: (page - 1) * limit,
       take: limit,
       relations: ['author', 'author.profile', 'replies'],
