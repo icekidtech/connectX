@@ -5,25 +5,25 @@ import { User } from '../../users/entities/user.entity';
 @Entity('stream_viewers')
 export class StreamViewer {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ManyToOne(() => Stream, (stream) => stream.viewers, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'stream_id' })
-  stream: Stream;
+  stream!: Stream;
 
   @Column()
-  streamId: string;
+  streamId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'viewer_id' })
-  viewer: User;
+  viewer!: User;
 
   @Column()
-  viewerId: string;
+  viewerId!: string;
 
   @CreateDateColumn()
-  joinedAt: Date;
+  joinedAt!: Date;
 
   @Column({ nullable: true })
-  leftAt: Date;
+  leftAt!: Date;
 }
