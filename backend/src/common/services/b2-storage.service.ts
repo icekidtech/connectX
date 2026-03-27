@@ -2,7 +2,6 @@ import { Injectable, BadRequestException, InternalServerErrorException, Logger }
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Request } from 'express';
-import multer from 'multer';
 
 /**
  * B2StorageService handles all Backblaze B2 file operations.
