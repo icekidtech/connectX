@@ -10,6 +10,7 @@ import {
   Request,
   BadRequestException,
 } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -27,7 +28,7 @@ export class UsersController {
    */
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
-  async getCurrentUser(@Request() req) {
+  async getCurrentUser(@Request() req: ExpressRequest & { user: any }) {
     return this.usersService.getCurrentUser(req.user.id);
   }
 
@@ -44,7 +45,7 @@ export class UsersController {
    */
   @Put('profile')
   @UseGuards(AuthGuard('jwt'))
-  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+  async updateProfile(@Request() req: ExpressRequest & { user: any }, @Body() updateProfileDto: UpdateProfileDto) {
     return this.usersService.updateUserProfile(req.user.id, updateProfileDto);
   }
 
@@ -53,7 +54,7 @@ export class UsersController {
    */
   @Put('preferences')
   @UseGuards(AuthGuard('jwt'))
-  async updatePreferences(@Request() req, @Body() preferencesDto: UpdatePreferencesDto) {
+  async updatePreferences(@Request() req: ExpressRequest & { user: any }, @Body() preferencesDto: UpdatePreferencesDto) {
     return this.usersService.updateUserPreferences(req.user.id, preferencesDto);
   }
 
@@ -62,7 +63,7 @@ export class UsersController {
    */
   @Put('privacy-settings')
   @UseGuards(AuthGuard('jwt'))
-  async updatePrivacySettings(@Request() req, @Body() privacyDto: UpdatePrivacySettingsDto) {
+  async updatePrivacySettings(@Request() req: ExpressRequest & { user: any }, @Body() privacyDto: UpdatePrivacySettingsDto) {
     return this.usersService.updatePrivacySettings(req.user.id, privacyDto);
   }
 
@@ -71,7 +72,7 @@ export class UsersController {
    */
   @Delete()
   @UseGuards(AuthGuard('jwt'))
-  async deleteUser(@Request() req) {
+  async deleteUser(@Request() req: ExpressRequest & { user: any }) {
     return this.usersService.deleteUser(req.user.id);
   }
 
@@ -80,7 +81,7 @@ export class UsersController {
    */
   @Post('photos')
   @UseGuards(AuthGuard('jwt'))
-  async addPhoto(@Request() req, @Body() photoDto: AddUserPhotoDto) {
+  async addPhoto(@Request() req: ExpressRequest & { user: any }, @Body() photoDto: AddUserPhotoDto) {
     return this.usersService.addUserPhoto(req.user.id, photoDto);
   }
 
@@ -97,7 +98,7 @@ export class UsersController {
    */
   @Delete('photos/:photoId')
   @UseGuards(AuthGuard('jwt'))
-  async removePhoto(@Request() req, @Param('photoId') photoId: string) {
+  async removePhoto(@Request() req: ExpressRequest & { user: any }, @Param('photoId') photoId: string) {
     return this.usersService.removeUserPhoto(req.user.id, photoId);
   }
 
@@ -106,7 +107,7 @@ export class UsersController {
    */
   @Post('interests')
   @UseGuards(AuthGuard('jwt'))
-  async addInterest(@Request() req, @Body() interestDto: AddUserInterestDto) {
+  async addInterest(@Request() req: ExpressRequest & { user: any }, @Body() interestDto: AddUserInterestDto) {
     return this.usersService.addUserInterest(req.user.id, interestDto);
   }
 
@@ -123,7 +124,7 @@ export class UsersController {
    */
   @Delete('interests/:interestId')
   @UseGuards(AuthGuard('jwt'))
-  async removeInterest(@Request() req, @Param('interestId') interestId: string) {
+  async removeInterest(@Request() req: ExpressRequest & { user: any }, @Param('interestId') interestId: string) {
     return this.usersService.removeUserInterest(req.user.id, interestId);
   }
 
@@ -132,7 +133,7 @@ export class UsersController {
    */
   @Post('block/:userIdToBlock')
   @UseGuards(AuthGuard('jwt'))
-  async blockUser(@Request() req, @Param('userIdToBlock') userIdToBlock: string) {
+  async blockUser(@Request() req: ExpressRequest & { user: any }, @Param('userIdToBlock') userIdToBlock: string) {
     return this.usersService.blockUser(req.user.id, userIdToBlock);
   }
 
@@ -141,7 +142,7 @@ export class UsersController {
    */
   @Delete('block/:userIdToUnblock')
   @UseGuards(AuthGuard('jwt'))
-  async unblockUser(@Request() req, @Param('userIdToUnblock') userIdToUnblock: string) {
+  async unblockUser(@Request() req: ExpressRequest & { user: any }, @Param('userIdToUnblock') userIdToUnblock: string) {
     return this.usersService.unblockUser(req.user.id, userIdToUnblock);
   }
 
@@ -150,7 +151,7 @@ export class UsersController {
    */
   @Get('blocked/list')
   @UseGuards(AuthGuard('jwt'))
-  async getBlockedUsers(@Request() req) {
+  async getBlockedUsers(@Request() req: ExpressRequest & { user: any }) {
     return this.usersService.getBlockedUsers(req.user.id);
   }
 
@@ -159,7 +160,7 @@ export class UsersController {
    */
   @Get('block/check/:otherUserId')
   @UseGuards(AuthGuard('jwt'))
-  async isUserBlocked(@Request() req, @Param('otherUserId') otherUserId: string) {
+  async isUserBlocked(@Request() req: ExpressRequest & { user: any }, @Param('otherUserId') otherUserId: string) {
     const isBlocked = await this.usersService.isUserBlocked(req.user.id, otherUserId);
     return { isBlocked };
   }
