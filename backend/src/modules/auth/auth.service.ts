@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { SignUpDto } from './dto/signup.dto';
@@ -15,7 +16,60 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto) {
+  /**
+   * Generate access token (24 hours)
+   */
+  private generateAccessToken(userId: string, email: string): string {
+    return this.jwtService.sign(
+      { sub: userId, email },
+      { expiresIn: '24h' }
+    );
+  }
+
+  /**
+   * Generate refresh token (7 days)
+   */
+  private generateRefreshToken(userId: string): string {
+    return this.jwtService.sign(
+      { sub: userId, type: 'refresh' },
+      { expiresIn: '7d' }
+    );
+  }
+
+  /**
+   * Set httpOnly cookies on response
+   */
+  private setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // Access token cookie (24 hours)
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,        // JS cannot access
+      secure: isProduction,  // HTTPS only in production
+      sameSite: 'strict',    // CSRF protection
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      path: '/',
+    });
+
+    // Refresh token cookie (7 days)
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
+  }
+
+  /**
+   * Clear auth cookies on logout
+   */
+  private clearAuthCookies(res: Response) {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+  }
+
+  async signUp(signUpDto: SignUpDto, res: Response) {
     const { email, username, password, confirmPassword } = signUpDto;
 
     if (password !== confirmPassword) {
@@ -40,17 +94,23 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    // Generate tokens
+    const accessToken = this.generateAccessToken(user.id, user.email);
+    const refreshToken = this.generateRefreshToken(user.id);
 
+    // Set cookies
+    this.setAuthCookies(res, accessToken, refreshToken);
+
+    // Return user data (NOT tokens - stored in httpOnly cookies)
     return {
       id: user.id,
       email: user.email,
       username: user.username,
-      token,
+      message: 'User registered successfully',
     };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, res: Response) {
     const { email, password } = loginDto;
 
     const user = await this.userRepository.findOne({ where: { email } });
@@ -65,13 +125,19 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    // Generate tokens
+    const accessToken = this.generateAccessToken(user.id, user.email);
+    const refreshToken = this.generateRefreshToken(user.id);
 
+    // Set cookies
+    this.setAuthCookies(res, accessToken, refreshToken);
+
+    // Return user data (NOT tokens)
     return {
       id: user.id,
       email: user.email,
       username: user.username,
-      token,
+      message: 'Login successful',
     };
   }
 
@@ -105,26 +171,30 @@ export class AuthService {
   /**
    * Refresh JWT token
    */
-  async refreshToken(userId: string) {
+  async refreshToken(userId: string, res: Response) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    // Generate new tokens
+    const accessToken = this.generateAccessToken(user.id, user.email);
+    const refreshToken = this.generateRefreshToken(user.id);
+
+    // Set new cookies
+    this.setAuthCookies(res, accessToken, refreshToken);
 
     return {
-      id: user.id,
-      email: user.email,
-      token,
+      message: 'Token refreshed',
     };
   }
 
   /**
-   * Logout (currently just returns success - token invalidation happens on frontend)
+   * Logout (clear cookies)
    */
-  async logout() {
+  async logout(res: Response) {
+    this.clearAuthCookies(res);
     return {
       message: 'Logged out successfully',
     };
