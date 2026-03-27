@@ -44,7 +44,7 @@ export class B2StorageService {
   /**
    * Validate media file (MIME type and size)
    */
-  validateMediaFile(file: multer.File, mediaType: 'image' | 'video'): void {
+  validateMediaFile(file: any, mediaType: 'image' | 'video'): void {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -128,7 +128,7 @@ export class B2StorageService {
    * Upload file to B2 and return authenticated URL
    */
   async uploadFile(
-    file: multer.File,
+    file: any,
     mediaType: 'image' | 'video',
     fileName?: string
   ): Promise<{ url: string; publicId: string }> {
