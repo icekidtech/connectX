@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, Column } from 'typeorm';
 import { Post } from './post.entity';
+import { PostComment } from './post-comment.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('post_likes')
@@ -7,12 +8,19 @@ export class PostLike {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Post, (post) => post.likes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Post, (post) => post.likes, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'post_id' })
   post: Post;
 
-  @Column()
+  @Column({ nullable: true })
   postId: string;
+
+  @ManyToOne(() => PostComment, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'comment_id' })
+  comment: PostComment;
+
+  @Column({ nullable: true })
+  commentId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
@@ -24,3 +32,4 @@ export class PostLike {
   @CreateDateColumn()
   createdAt: Date;
 }
+
