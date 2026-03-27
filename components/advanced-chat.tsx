@@ -1,102 +1,154 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Send, Paperclip, MoreVertical, Check, CheckCheck } from 'lucide-react';
+import { Send, Paperclip, MoreVertical, Check, CheckCheck, Wifi, WifiOff } from 'lucide-react';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
-
-interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  mediaUrl?: string;
-  messageType: 'text' | 'media';
-  createdAt: string;
-  isRead?: boolean;
-  readAt?: string;
-  sender?: {
-    profile: {
-      displayName: string;
-      avatar: string;
-    };
-  };
-}
+import { useAuth } from '@/hooks/use-auth-token';
+import { useWebSocket } from '@/hooks/use-websocket';
+import {
+  useInfiniteQueryConversationMessages,
+  useMutationSendMessage,
+  useMutationMarkConversationRead,
+  Message,
+} from '@/lib/api/chat';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AdvancedChatProps {
   conversationId: string;
-  currentUserId: string;
   otherUserName: string;
   otherUserAvatar?: string;
 }
 
 export function AdvancedChat({
   conversationId,
-  currentUserId,
   otherUserName,
   otherUserAvatar,
 }: AdvancedChatProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { user } = useAuth();
+  const { socket, status: wsStatus } = useWebSocket();
+  const queryClient = useQueryClient();
+  
   const [messageText, setMessageText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Scroll to bottom when messages change
-  const scrollToBottom = () => {
+  if (!user) {
+    return <div className="p-4 text-muted-foreground">Loading...</div>;
+  }
+
+  // Load infinite messages
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQueryConversationMessages(conversationId, 50);
+
+  // Send message mutation
+  const sendMessageMutation = useMutationSendMessage(conversationId);
+
+  // Mark as read
+  const markReadMutation = useMutationMarkConversationRead(conversationId);
+
+  // Scroll to bottom
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [data, scrollToBottom]);
 
-  // Load messages
+  // Mark conversation as read on mount
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `/api/chat/conversations/${conversationId}/messages?page=1&limit=50`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
+    markReadMutation.mutate();
+  }, [conversationId]);
+
+  // WebSocket listeners for real-time updates
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for new messages from other user
+    const handleNewMessage = (message: Message) => {
+      if (message.conversationId === conversationId) {
+        // Add message to cache
+        queryClient.setInfiniteQueryData(
+          ['chat', 'messages', conversationId],
+          (oldData: any) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page: any, index: number) => {
+                if (index === oldData.pages.length - 1) {
+                  return {
+                    ...page,
+                    data: [...page.data, message],
+                  };
+                }
+                return page;
+              }),
+            };
           }
         );
-        const data = await response.json();
-        setMessages(data);
-
-        // Mark as read
-        await fetch(`/api/chat/conversations/${conversationId}/read`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-      } catch (error) {
-        console.error('[v0] Failed to load messages:', error);
-      } finally {
-        setLoading(false);
+        // Scroll to new message
+        setTimeout(scrollToBottom, 100);
       }
     };
 
-    loadMessages();
-  }, [conversationId]);
+    // Listen for typing indicator
+    const handleUserTyping = (data: { conversationId: string; isTyping: boolean }) => {
+      if (data.conversationId === conversationId) {
+        setOtherUserTyping(data.isTyping);
+      }
+    };
 
+    // Listen for message read receipts
+    const handleMessageRead = (data: { messageId: string; readAt: string }) => {
+      queryClient.setInfiniteQueryData(
+        ['chat', 'messages', conversationId],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) => ({
+              ...page,
+              data: page.data.map((msg: Message) =>
+                msg.id === data.messageId
+                  ? { ...msg, isRead: true, readAt: data.readAt }
+                  : msg
+              ),
+            })),
+          };
+        }
+      );
+    };
+
+    socket.on('newMessage', handleNewMessage);
+    socket.on('userTyping', handleUserTyping);
+    socket.on('messageRead', handleMessageRead);
+
+    return () => {
+      socket.off('newMessage', handleNewMessage);
+      socket.off('userTyping', handleUserTyping);
+      socket.off('messageRead', handleMessageRead);
+    };
+  }, [socket, conversationId, queryClient, scrollToBottom]);
+
+  // Handle typing
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageText(e.target.value);
 
-    // Emit typing indicator
-    if (!isTyping) {
+    // Emit typing indicator via WebSocket
+    if (socket && !isTyping) {
       setIsTyping(true);
-      // In a real app, emit WebSocket event here
+      socket.emit('typing', { conversationId, isTyping: true });
     }
 
     // Clear previous timeout
@@ -104,63 +156,39 @@ export function AdvancedChat({
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Set timeout to stop typing indicator
+    // Stop typing after 3 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      // In a real app, emit WebSocket event here
+      if (socket) {
+        socket.emit('typing', { conversationId, isTyping: false });
+      }
     }, 3000);
   };
 
+  // Handle send message
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageText.trim()) return;
 
-    setSending(true);
-    try {
-      const response = await fetch(
-        `/api/chat/conversations/${conversationId}/messages`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify({
-            content: messageText,
-            messageType: 'text',
-          }),
-        }
-      );
+    const content = messageText;
+    setMessageText('');
+    setIsTyping(false);
 
-      if (response.ok) {
-        const newMessage = await response.json();
-        setMessages([...messages, newMessage]);
-        setMessageText('');
-        setIsTyping(false);
-
-        // In a real app, emit WebSocket event for message sent
-      }
-    } catch (error) {
-      console.error('[v0] Failed to send message:', error);
-    } finally {
-      setSending(false);
+    if (socket) {
+      socket.emit('typing', { conversationId, isTyping: false });
     }
+
+    sendMessageMutation.mutate(content);
   };
 
   const handleSendMedia = async (file: File) => {
-    // In a real app, upload to storage first
-    console.log('[v0] Send media:', file);
+    // TODO: Implement media upload
+    console.log('Send media:', file);
   };
 
-  if (loading) {
-    return (
-      <Card className="h-full border-border flex flex-col">
-        <CardHeader className="border-b border-border">
-          <div className="text-center">Loading messages...</div>
-        </CardHeader>
-      </Card>
-    );
-  }
+  // Flatten all messages from pages
+  const messages =
+    data?.pages.flatMap((page) => page.data).reverse() ?? [];
 
   return (
     <Card className="h-full border-border flex flex-col">
@@ -184,9 +212,21 @@ export function AdvancedChat({
             </div>
             <div>
               <p className="font-semibold text-foreground">{otherUserName}</p>
-              <p className="text-xs text-muted-foreground">
-                {otherUserTyping ? 'typing...' : 'Active'}
-              </p>
+              <div className="flex items-center gap-1">
+                {wsStatus === 'connected' ? (
+                  <>
+                    <Wifi className="w-3 h-3 text-green-500" />
+                    <p className="text-xs text-muted-foreground">
+                      {otherUserTyping ? 'typing...' : 'Active'}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3 h-3 text-destructive" />
+                    <p className="text-xs text-destructive">Reconnecting...</p>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           <Button variant="ghost" size="sm">
@@ -197,7 +237,14 @@ export function AdvancedChat({
 
       {/* Messages */}
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-muted-foreground border-t-primary rounded-full animate-spin mx-auto mb-2" />
+              <p className="text-muted-foreground">Loading messages...</p>
+            </div>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-center">
             <div>
               <p className="text-muted-foreground mb-2">No messages yet</p>
@@ -205,77 +252,82 @@ export function AdvancedChat({
             </div>
           </div>
         ) : (
-          messages.map((message, index) => {
-            const isOwn = message.senderId === currentUserId;
-            const showAvatar =
-              index === 0 ||
-              messages[index - 1].senderId !== message.senderId;
+          <>
+            {hasNextPage && (
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? 'Loading...' : 'Load earlier messages'}
+                </Button>
+              </div>
+            )}
 
-            return (
-              <div
-                key={message.id}
-                className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
-              >
-                {!isOwn && showAvatar && (
-                  <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden relative">
-                    {otherUserAvatar ? (
-                      <Image
-                        src={otherUserAvatar}
-                        alt={otherUserName}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-bold">
-                        {otherUserName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                )}
-                {!isOwn && !showAvatar && <div className="w-8" />}
+            {messages.map((message, index) => {
+              const isOwn = message.senderId === user.id;
+              const showAvatar =
+                index === messages.length - 1 ||
+                messages[index + 1].senderId !== message.senderId;
 
-                <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
-                  <div
-                    className={`max-w-xs px-4 py-2 rounded-lg ${
-                      isOwn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-foreground'
-                    }`}
-                  >
-                    {message.mediaUrl ? (
-                      <div className="relative w-48 h-48 rounded overflow-hidden">
+              return (
+                <div
+                  key={message.id}
+                  className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
+                >
+                  {!isOwn && showAvatar && (
+                    <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden relative">
+                      {otherUserAvatar ? (
                         <Image
-                          src={message.mediaUrl}
-                          alt="Message media"
+                          src={otherUserAvatar}
+                          alt={otherUserName}
                           fill
                           className="object-cover"
                         />
-                      </div>
-                    ) : (
-                      <p className="text-sm break-words">{message.content}</p>
-                    )}
-                  </div>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-bold">
+                          {otherUserName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {!isOwn && !showAvatar && <div className="w-8" />}
 
-                  <div className="flex items-center gap-1 mt-1">
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(message.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                    {isOwn && (
-                      <>
-                        {message.isRead ? (
-                          <CheckCheck className="w-3 h-3 text-blue-500" />
+                  <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                    <div
+                      className={`max-w-xs px-4 py-2 rounded-lg ${
+                        isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground'
+                      }`}
+                    >
+                      <p className="text-sm break-words">{message.content}</p>
+                    </div>
+
+                    <div className="flex items-center gap-1 mt-1">
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(message.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                      {isOwn &&
+                        (!message.id.startsWith('temp-') ? (
+                          message.isRead ? (
+                            <CheckCheck className="w-3 h-3 text-blue-500" />
+                          ) : (
+                            <Check className="w-3 h-3 text-muted-foreground" />
+                          )
                         ) : (
-                          <Check className="w-3 h-3 text-muted-foreground" />
-                        )}
-                      </>
-                    )}
+                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" />
+                        ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </>
         )}
 
         {otherUserTyping && (
@@ -292,6 +344,12 @@ export function AdvancedChat({
           </div>
         )}
 
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-2">
+            <div className="w-4 h-4 border-2 border-muted-foreground border-t-primary rounded-full animate-spin" />
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </CardContent>
 
@@ -305,6 +363,7 @@ export function AdvancedChat({
           variant="ghost"
           size="sm"
           onClick={() => document.getElementById(`media-${conversationId}`)?.click()}
+          disabled={sendMessageMutation.isPending}
         >
           <Paperclip className="w-5 h-5" />
         </Button>
@@ -321,16 +380,20 @@ export function AdvancedChat({
           value={messageText}
           onChange={handleTyping}
           className="flex-1 bg-background border-border"
-          disabled={sending}
+          disabled={sendMessageMutation.isPending || wsStatus !== 'connected'}
         />
 
         <Button
           type="submit"
           size="sm"
-          disabled={!messageText.trim() || sending}
+          disabled={
+            !messageText.trim() ||
+            sendMessageMutation.isPending ||
+            wsStatus !== 'connected'
+          }
           className="bg-primary hover:bg-primary/90"
         >
-          {sending ? (
+          {sendMessageMutation.isPending ? (
             <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
           ) : (
             <Send className="w-4 h-4" />
