@@ -100,7 +100,7 @@ export class MatchingService {
 
       // Relationship type filter
       if (queryDto.relationshipTypeFilter && queryDto.relationshipTypeFilter.length > 0) {
-        const preferences = currentUser.profile.preferredRelationshipTypes || [];
+        const preferences = currentUser.profile.lookingFor || [];
         const hasOverlap = queryDto.relationshipTypeFilter.some((type) =>
           preferences.includes(type)
         );
@@ -142,11 +142,11 @@ export class MatchingService {
         userAge,
         targetAge,
         targetGender: user.profile.gender,
-        userGenderPreference: currentUser.profile.preferredGenders?.[0] || 'any',
+        userGenderPreference: currentUser.profile.preferences?.genderPreference?.[0] || 'any',
         commonInterestCount,
-        userRelationshipTypes: currentUser.profile.preferredRelationshipTypes || [],
-        targetRelationshipTypes: user.profile.preferredRelationshipTypes || [],
-        targetIsOnline: false, // Simplified for Phase 2; can add lastSeenAt tracking later
+        userRelationshipTypes: currentUser.profile.lookingFor || [],
+        targetRelationshipTypes: user.profile.lookingFor || [],
+        targetIsOnline: false,
         maxDistance: queryDto.maxDistance || 100,
       });
 
