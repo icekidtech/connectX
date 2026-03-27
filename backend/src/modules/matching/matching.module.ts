@@ -3,12 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Match } from './entities/match.entity';
 import { User } from '../users/entities/user.entity';
 import { UserProfile } from '../users/entities/user-profile.entity';
+import { UserInterest } from '../users/entities/user-interest.entity';
 import { Block } from '../users/entities/block.entity';
 import { MatchingService } from './matching.service';
 import { MatchingController } from './matching.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Match, User, UserProfile, Block])],
+  imports: [TypeOrmModule.forFeature([Match, User, UserProfile, UserInterest, Block])],
   providers: [MatchingService],
   controllers: [MatchingController],
   exports: [MatchingService],
