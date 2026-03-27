@@ -24,11 +24,9 @@ interface AuthResponse {
 // Signup request/response types
 interface SignupRequest {
   email: string;
+  username: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
+  confirmPassword: string;
 }
 
 /**
