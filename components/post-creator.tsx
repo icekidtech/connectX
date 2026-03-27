@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Image, Send, X } from 'lucide-react';
+import { useMutationCreatePost } from '@/lib/api/posts';
+import { useToast } from '@/hooks/use-toast';
 
 interface PostCreatorProps {
   onPostCreated?: () => void;
@@ -15,51 +17,49 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState('');
   const [isNsfw, setIsNsfw] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const createPostMutation = useMutationCreatePost();
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
 
-    try {
-      const hashtagArray = hashtags
-        .split(' ')
-        .filter((tag) => tag.startsWith('#'))
-        .map((tag) => tag.replace('#', ''));
+    const hashtagArray = hashtags
+      .split(' ')
+      .filter((tag) => tag.trim().startsWith('#'))
+      .map((tag) => tag.replace('#', ''));
 
-      // TODO: Replace with actual API call
-      const response = await fetch('http://localhost:3001/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+    createPostMutation.mutate(
+      {
+        caption,
+        hashtags: hashtagArray,
+        isNsfw,
+      },
+      {
+        onSuccess: () => {
+          // Reset form
+          setCaption('');
+          setHashtags('');
+          setIsNsfw(false);
+          setIsOpen(false);
+
+          // Notify parent
+          onPostCreated?.();
+
+          toast({
+            title: 'Post created',
+            description: 'Your post has been published!',
+          });
         },
-        body: JSON.stringify({
-          caption,
-          hashtags: hashtagArray,
-          isNsfw,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create post');
+        onError: (error: any) => {
+          toast({
+            title: 'Failed to create post',
+            description: error.message,
+            variant: 'destructive',
+          });
+        },
       }
-
-      // Reset form
-      setCaption('');
-      setHashtags('');
-      setIsNsfw(false);
-      setIsOpen(false);
-
-      // Notify parent
-      onPostCreated?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create post');
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   if (!isOpen) {
@@ -92,12 +92,6 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
             <X className="h-5 w-5" />
           </button>
         </div>
-
-        {error && (
-          <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-start gap-4">
@@ -136,7 +130,7 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" className="border-border text-foreground" disabled={isLoading}>
+            <Button variant="outline" className="border-border text-foreground" disabled={createPostMutation.isPending}>
               <Image className="h-4 w-4 mr-2" />
               Add Photos
             </Button>
@@ -146,17 +140,17 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
               variant="outline"
               className="border-border"
               onClick={() => setIsOpen(false)}
-              disabled={isLoading}
+              disabled={createPostMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              disabled={isLoading || !caption.trim()}
+              disabled={createPostMutation.isPending || !caption.trim()}
             >
               <Send className="h-4 w-4 mr-2" />
-              {isLoading ? 'Posting...' : 'Post'}
+              {createPostMutation.isPending ? 'Posting...' : 'Post'}
             </Button>
           </div>
         </form>
