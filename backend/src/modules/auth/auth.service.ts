@@ -75,7 +75,66 @@ export class AuthService {
     };
   }
 
+  /**
+   * Validate user by ID (used by JWT strategy)
+   */
   async validateUser(id: string) {
-    return await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      return null;
+    }
+    return this.sanitizeUser(user);
+  }
+
+  /**
+   * Get current authenticated user
+   */
+  async getCurrentUser(id: string) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['profile', 'photos', 'interests'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return this.sanitizeUser(user);
+  }
+
+  /**
+   * Refresh JWT token
+   */
+  async refreshToken(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+
+    return {
+      id: user.id,
+      email: user.email,
+      token,
+    };
+  }
+
+  /**
+   * Logout (currently just returns success - token invalidation happens on frontend)
+   */
+  async logout() {
+    return {
+      message: 'Logged out successfully',
+    };
+  }
+
+  /**
+   * Helper: Remove sensitive data from user object
+   */
+  private sanitizeUser(user: User) {
+    const { passwordHash, verificationToken, ...sanitized } = user;
+    return sanitized;
   }
 }
