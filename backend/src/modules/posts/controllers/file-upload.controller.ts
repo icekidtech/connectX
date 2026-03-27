@@ -90,7 +90,7 @@ export class FileUploadController {
       },
     },
   })
-  async uploadImage(@UploadedFile() file: multer.File) {
+  async uploadImage(@UploadedFile() file: any) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -142,7 +142,7 @@ export class FileUploadController {
       },
     },
   })
-  async uploadVideo(@UploadedFile() file: multer.File) {
+  async uploadVideo(@UploadedFile() file: any) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
