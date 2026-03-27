@@ -2,20 +2,20 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart } from 'lucide-react';
+import { useMutationLogin } from '@/lib/api/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Login() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const { toast } = useToast();
+  const loginMutation = useMutationLogin();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -26,31 +26,17 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-
+    
     try {
-      // TODO: Replace with actual backend API call
-      const response = await fetch('http://localhost:3001/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      await loginMutation.mutateAsync(formData);
+      // Mutation handles redirect via useRouter.push('/dashboard')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Login failed. Please try again.';
+      toast({
+        title: 'Login Error',
+        description: message,
+        variant: 'destructive',
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Login failed');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      router.push('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -73,12 +59,6 @@ export default function Login() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {error && (
-              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium text-foreground">
@@ -120,9 +100,9 @@ export default function Login() {
               <Button
                 type="submit"
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-10"
-                disabled={isLoading}
+                disabled={loginMutation.isPending}
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {loginMutation.isPending ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
 
@@ -135,7 +115,7 @@ export default function Login() {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full border-border" disabled={isLoading}>
+            <Button variant="outline" className="w-full border-border" disabled={loginMutation.isPending}>
               Sign in with Google
             </Button>
 
