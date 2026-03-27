@@ -8,6 +8,7 @@ import { Heart, MessageCircle, Trash2, Flag, Send } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { useQueryComments, useMutationCommentOnPost } from '@/lib/api/posts';
 
 interface PostCardProps {
   post: {
@@ -39,62 +40,35 @@ interface PostCardProps {
 
 export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<any[]>([]);
   const [commentText, setCommentText] = useState('');
-  const [isLoadingComments, setIsLoadingComments] = useState(false);
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
-  const loadComments = async () => {
-    if (isLoadingComments || comments.length > 0) return;
+  // Fetch comments when section is opened
+  const { data: commentsData, isLoading: isLoadingComments } = useQueryComments(
+    post.id,
+    showComments ? 1 : undefined, // Only fetch when showComments is true
+    10
+  );
+  const comments = commentsData?.pages?.[0]?.data || [];
 
-    setIsLoadingComments(true);
-    try {
-      const response = await fetch(`/api/posts/${post.id}/comments`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const data = await response.json();
-      setComments(data);
-    } catch (error) {
-      console.error('[v0] Failed to load comments:', error);
-    } finally {
-      setIsLoadingComments(false);
-    }
-  };
+  // Mutation for posting comments
+  const commentMutation = useMutationCommentOnPost();
 
   const handleShowComments = () => {
     setShowComments(!showComments);
-    if (!showComments) {
-      loadComments();
-    }
   };
 
-  const handleSubmitComment = async (e: React.FormEvent) => {
+  const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
 
-    setIsSubmittingComment(true);
-    try {
-      const response = await fetch(`/api/posts/${post.id}/comment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+    commentMutation.mutate(
+      { postId: post.id, data: { content: commentText } },
+      {
+        onSuccess: () => {
+          setCommentText('');
         },
-        body: JSON.stringify({ content: commentText }),
-      });
-
-      if (response.ok) {
-        const newComment = await response.json();
-        setComments([...comments, newComment]);
-        setCommentText('');
       }
-    } catch (error) {
-      console.error('[v0] Failed to submit comment:', error);
-    } finally {
-      setIsSubmittingComment(false);
-    }
+    );
   };
 
   const isOwner = currentUserId === post.author.id;
@@ -231,10 +205,12 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
         <div className="border-t border-border bg-muted/30">
           {/* Comments List */}
           <div className="p-4 space-y-3 max-h-64 overflow-y-auto">
-            {comments.length === 0 ? (
+            {isLoadingComments ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Loading comments...</p>
+            ) : comments.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">No comments yet</p>
             ) : (
-              comments.map((comment) => (
+              comments.map((comment: any) => (
                 <div key={comment.id} className="flex gap-2">
                   <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden relative">
                     {comment.author?.profile?.avatar ? (
@@ -280,7 +256,7 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
             <Button
               type="submit"
               size="sm"
-              disabled={isSubmittingComment || !commentText.trim()}
+              disabled={commentMutation.isPending || !commentText.trim()}
               className="bg-primary hover:bg-primary/90"
             >
               <Send className="w-4 h-4" />
