@@ -20,6 +20,7 @@ import {
   ApiBody,
   ApiParam,
 } from '@nestjs/swagger';
+import multer from 'multer';
 import { B2StorageService } from '../../../common/services/b2-storage.service';
 
 /**
@@ -89,7 +90,7 @@ export class FileUploadController {
       },
     },
   })
-  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+  async uploadImage(@UploadedFile() file: multer.File) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -141,7 +142,7 @@ export class FileUploadController {
       },
     },
   })
-  async uploadVideo(@UploadedFile() file: Express.Multer.File) {
+  async uploadVideo(@UploadedFile() file: multer.File) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
