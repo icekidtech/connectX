@@ -334,4 +334,5 @@ export class PostsService {
 
     return this.getPostById(savedPost.id);
   }
+}
 
