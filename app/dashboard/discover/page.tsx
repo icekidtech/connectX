@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DiscoverCard } from '@/components/discover-card';
 import { PreferenceEditor } from '@/components/preference-editor';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useInfiniteQueryRecommendations, useMutationLikeUser } from '@/lib/api/matching';
+import { useIntersection } from '@/components/intersection-observer';
+import { useToast } from '@/hooks/use-toast';
 
-interface DiscoverUser {
+interface RecommendedUser {
   id: string;
   displayName: string;
   avatar: string;
@@ -20,67 +23,91 @@ interface DiscoverUser {
 }
 
 export default function DiscoverPage() {
-  const [users, setUsers] = useState<DiscoverUser[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<DiscoverUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<RecommendedUser | null>(null);
+  const [filters, setFilters] = useState({});
+  const { toast } = useToast();
 
-  const fetchRecommendations = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/matching/recommendations?page=1&limit=20', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const data = await response.json();
-      setUsers(data);
-      setCurrentIndex(0);
-    } catch (error) {
-      console.error('[v0] Failed to fetch recommendations:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Fetch recommendations with pagination
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error,
+  } = useInfiniteQueryRecommendations(filters, 20);
 
-  useEffect(() => {
-    fetchRecommendations();
-  }, [fetchRecommendations]);
+  // Like mutation
+  const likeMutation = useMutationLikeUser();
 
-  const handleLike = async (userId: string) => {
-    try {
-      const response = await fetch(`/api/matching/${userId}/like`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const result = await response.json();
-      console.log('[v0] Like result:', result);
-
-      if (currentIndex < users.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        fetchRecommendations();
+  // Intersection observer for loading next page
+  const nextPageRef = useIntersection(
+    useCallback(() => {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
       }
-    } catch (error) {
-      console.error('[v0] Failed to like user:', error);
-    }
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  );
+
+  // Flatten all pages into single array
+  const allUsers = data?.pages.flatMap((page) => page.data) || [];
+  const currentUser = allUsers[currentIndex];
+
+  const handleLike = (userId: string) => {
+    likeMutation.mutate(userId, {
+      onSuccess: () => {
+        if (currentIndex < allUsers.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+        } else if (hasNextPage) {
+          fetchNextPage();
+        } else {
+          toast({
+            title: 'No More Recommendations',
+            description: 'Check back later for new matches!',
+          });
+        }
+        setSelectedUser(null);
+      },
+      onError: (error: any) => {
+        toast({
+          title: 'Could not like user',
+          description: error.message,
+          variant: 'destructive',
+        });
+      },
+    });
   };
 
   const handlePass = (userId: string) => {
-    if (currentIndex < users.length - 1) {
+    if (currentIndex < allUsers.length - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else {
-      fetchRecommendations();
+    } else if (hasNextPage) {
+      fetchNextPage();
     }
+    setSelectedUser(null);
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div className="p-8 text-center text-lg">Loading recommendations...</div>;
   }
 
-  if (users.length === 0) {
+  if (error) {
+    return (
+      <div className="p-8">
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardContent className="pt-12 pb-12 text-center">
+            <p className="text-lg text-destructive mb-4">Failed to load recommendations</p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (allUsers.length === 0) {
     return (
       <div className="p-8">
         <h1 className="text-3xl font-bold mb-8">Discover</h1>
@@ -92,14 +119,11 @@ export default function DiscoverPage() {
             <p className="text-sm text-muted-foreground mb-6">
               Try adjusting your preferences or check back later!
             </p>
-            <Button onClick={fetchRecommendations}>Refresh</Button>
           </CardContent>
         </Card>
       </div>
     );
   }
-
-  const currentUser = users[currentIndex];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
@@ -108,14 +132,14 @@ export default function DiscoverPage() {
           <div>
             <h1 className="text-3xl font-bold mb-2">Discover</h1>
             <p className="text-muted-foreground">
-              {users.length > 0 ? `${currentIndex + 1} of ${users.length} matches` : 'Finding matches...'}
+              {allUsers.length > 0 ? `${currentIndex + 1} of ${allUsers.length} recommendations` : 'Finding matches...'}
             </p>
           </div>
         </div>
 
         {/* Preference Editor */}
         <div className="mb-8">
-          <PreferenceEditor onSave={() => fetchRecommendations()} />
+          <PreferenceEditor onSave={(newFilters) => setFilters(newFilters)} />
         </div>
 
         {currentUser && (
@@ -127,10 +151,12 @@ export default function DiscoverPage() {
           />
         )}
 
-        {currentIndex >= users.length - 3 && (
+        {/* Next page trigger */}
+        <div ref={nextPageRef} className="mt-8" />
+
+        {currentIndex >= allUsers.length - 3 && hasNextPage && (
           <div className="mt-8 text-center">
-            <p className="text-muted-foreground mb-4">Running out of recommendations!</p>
-            <Button onClick={fetchRecommendations}>Load More</Button>
+            <p className="text-muted-foreground mb-4">Loading more recommendations...</p>
           </div>
         )}
       </div>
