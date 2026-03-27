@@ -1,6 +1,8 @@
 import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
+import { Request } from 'express';
+import multer from 'multer';
 
 /**
  * B2StorageService handles all Backblaze B2 file operations.
@@ -30,10 +32,10 @@ export class B2StorageService {
   private readonly ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
   constructor(private configService: ConfigService) {
-    this.appKeyId = this.configService.get('B2_APP_KEY_ID');
-    this.appKey = this.configService.get('B2_APP_KEY');
-    this.bucketId = this.configService.get('B2_BUCKET_ID');
-    this.bucketName = this.configService.get('B2_BUCKET_NAME');
+    this.appKeyId = this.configService.get<string>('B2_APP_KEY_ID') || '';
+    this.appKey = this.configService.get<string>('B2_APP_KEY') || '';
+    this.bucketId = this.configService.get<string>('B2_BUCKET_ID') || '';
+    this.bucketName = this.configService.get<string>('B2_BUCKET_NAME') || '';
 
     if (!this.appKeyId || !this.appKey || !this.bucketId || !this.bucketName) {
       this.logger.warn('B2 credentials not fully configured. File upload will fail.');
@@ -43,7 +45,7 @@ export class B2StorageService {
   /**
    * Validate media file (MIME type and size)
    */
-  validateMediaFile(file: Express.Multer.File, mediaType: 'image' | 'video'): void {
+  validateMediaFile(file: multer.File, mediaType: 'image' | 'video'): void {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -127,7 +129,7 @@ export class B2StorageService {
    * Upload file to B2 and return authenticated URL
    */
   async uploadFile(
-    file: Express.Multer.File,
+    file: multer.File,
     mediaType: 'image' | 'video',
     fileName?: string
   ): Promise<{ url: string; publicId: string }> {
