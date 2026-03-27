@@ -146,7 +146,7 @@ export class MatchingService {
         commonInterestCount,
         userRelationshipTypes: currentUser.profile.preferredRelationshipTypes || [],
         targetRelationshipTypes: user.profile.preferredRelationshipTypes || [],
-        targetIsOnline: user.lastSeenAt ? Date.now() - user.lastSeenAt.getTime() < 5 * 60 * 1000 : false,
+        targetIsOnline: false, // Simplified for Phase 2; can add lastSeenAt tracking later
         maxDistance: queryDto.maxDistance || 100,
       });
 
@@ -172,7 +172,7 @@ export class MatchingService {
         currentUser.interests.some((ui) => ui.interestId === ci.interestId)
       ).map((i) => i.interest.name),
       compatibilityScore: Math.round(user.compatibilityScore),
-      isOnline: user.lastSeenAt ? Date.now() - user.lastSeenAt.getTime() < 5 * 60 * 1000 : false,
+      isOnline: false, // Simplified for Phase 2
       status: 'recommended',
     }));
   }
