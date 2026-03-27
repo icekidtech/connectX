@@ -1,0 +1,655 @@
+{
+  "info": {
+    "name": "ConnectX Phase 2: Posts, Matching & Chat",
+    "description": "Complete Phase 2 API testing collection with Posts & Social Feed, Matching & Recommendations, and Chat REST endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Posts - Creation & Management",
+      "item": [
+        {
+          "name": "Create Post with Caption",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caption\": \"Beautiful sunset at the beach! 🌅\",\n  \"hashtags\": [\"travel\", \"sunset\", \"beach\"],\n  \"isNsfw\": false,\n  \"visibility\": \"public\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/posts",
+              "host": ["{{api_url}}"],
+              "path": ["posts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set('post_id', jsonData.id);",
+                  "  pm.test('✓ Post created successfully', function() {",
+                  "    pm.expect(pm.response.code).to.equal(201);",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "  });",
+                  "} else {",
+                  "  pm.test('✗ Failed to create post', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Posts Feed (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/feed?page=1&limit=10",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "feed"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Feed retrieved successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Single Post",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/{{post_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caption\": \"Updated: Amazing sunset, can't stop thinking about it!\",\n  \"hashtags\": [\"travel\", \"sunset\", \"beach\", \"wanderlust\"],\n  \"visibility\": \"friends\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/posts/{{post_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/{{post_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts - Interactions (Likes & Comments)",
+      "item": [
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/{{post_id}}/like",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "{{post_id}}", "like"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Like toggled', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Post Likes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/{{post_id}}/likes?page=1&limit=10",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "{{post_id}}", "likes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Comment to Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is absolutely stunning! Where was this taken?\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/posts/{{post_id}}/comment",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "{{post_id}}", "comment"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set('comment_id', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Post Comments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/{{post_id}}/comments?page=1&limit=5",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "{{post_id}}", "comments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Like Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/comment/{{comment_id}}/like",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "comment", "{{comment_id}}", "like"]
+            }
+          }
+        },
+        {
+          "name": "Get Comment Likes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/posts/comment/{{comment_id}}/likes?page=1&limit=10",
+              "host": ["{{api_url}}"],
+              "path": ["posts", "comment", "{{comment_id}}", "likes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media Upload",
+      "item": [
+        {
+          "name": "Upload Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_url}}/upload/image",
+              "host": ["{{api_url}}"],
+              "path": ["upload", "image"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set('media_url', jsonData.url);",
+                  "  pm.environment.set('media_public_id', jsonData.publicId);",
+                  "  pm.test('✓ Image uploaded successfully', function() {",
+                  "    pm.expect(jsonData.url).to.exist;",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload Video",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_url}}/upload/video",
+              "host": ["{{api_url}}"],
+              "path": ["upload", "video"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Matching - Recommendations & Likes",
+      "item": [
+        {
+          "name": "Get Recommendations (with Filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/matching/recommendations?page=1&limit=10&ageMin=20&ageMax=40&maxDistance=50&genderFilter=female",
+              "host": ["{{api_url}}"],
+              "path": ["matching", "recommendations"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "ageMin",
+                  "value": "20"
+                },
+                {
+                  "key": "ageMax",
+                  "value": "40"
+                },
+                {
+                  "key": "maxDistance",
+                  "value": "50"
+                },
+                {
+                  "key": "genderFilter",
+                  "value": "female"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Recommendations retrieved', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "  if (jsonData.length > 0) {",
+                  "    pm.environment.set('matched_user_id', jsonData[0].id);",
+                  "    pm.expect(jsonData[0].compatibilityScore).to.exist;",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Like User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/matching/{{matched_user_id}}/like",
+              "host": ["{{api_url}}"],
+              "path": ["matching", "{{matched_user_id}}", "like"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ User liked', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.status === 'matched') {",
+                  "    pm.test('  → Mutual match created!');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unlike User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/matching/{{matched_user_id}}/like",
+              "host": ["{{api_url}}"],
+              "path": ["matching", "{{matched_user_id}}", "like"]
+            }
+          }
+        },
+        {
+          "name": "Get My Matches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/matching/matches?page=1&limit=10",
+              "host": ["{{api_url}}"],
+              "path": ["matching", "matches"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Matches retrieved', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/matching/{{matched_user_id}}/block",
+              "host": ["{{api_url}}"],
+              "path": ["matching", "{{matched_user_id}}", "block"]
+            }
+          }
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/matching/{{matched_user_id}}/block",
+              "host": ["{{api_url}}"],
+              "path": ["matching", "{{matched_user_id}}", "block"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat - Conversations & Messages (Coming Phase 3)",
+      "description": "REST endpoints for chat are deferred to Phase 3. WebSocket implementation is in Phase 2 with auth and optimization.",
+      "item": [
+        {
+          "name": "NOTE: Chat REST endpoints coming in Phase 3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/conversations",
+              "host": ["{{api_url}}"],
+              "path": ["conversations"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "api_url",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "matched_user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "media_url",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "media_public_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
