@@ -19,9 +19,15 @@ async function bootstrap() {
   // Global exception filters
   app.useGlobalFilters(new HttpExceptionFilter(), new AllExceptionsFilter());
 
+  // Multer configuration for file uploads (in-memory for B2)
+  // Files are stored in memory and uploaded to Backblaze B2
+  // Max file size: 100MB (limited by B2)
+  app.useBodyParser('json', { limit: '10mb' });
+  app.useBodyParser('urlencoded', { limit: '10mb', extended: true });
+
   // CORS configuration
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || '',
     credentials: true,
   });
 
