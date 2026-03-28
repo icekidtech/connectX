@@ -51,7 +51,7 @@ export function useAuthToken(): UseAuthTokenReturn {
       try {
         // Try to get current user info
         // This will fail with 401 if token expired or invalid
-        const response = await fetch('/api/auth/me', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/auth/me`, {
           credentials: 'include', // Send cookies
         });
 
@@ -78,7 +78,7 @@ export function useAuthToken(): UseAuthTokenReturn {
     try {
       // Call backend logout endpoint
       // Backend will clear httpOnly cookies
-      await fetch('/api/auth/logout', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
