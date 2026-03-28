@@ -72,7 +72,7 @@ export function useAutoTokenRefresh() {
       }
 
       // Call refresh endpoint
-      const response = await fetch('/api/auth/refresh-token', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/auth/refresh-token`, {
         method: 'POST',
         credentials: 'include', // Send refreshToken cookie, receive new accessToken cookie
       });
