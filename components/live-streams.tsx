@@ -35,7 +35,7 @@ export function LiveStreams() {
   const fetchLiveStreams = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/streams/live?page=1&limit=20', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/streams/live?page=1&limit=20`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
