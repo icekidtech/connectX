@@ -39,7 +39,7 @@ export function useMutationLogin() {
 
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      return apiPost<AuthResponse>('/api/auth/login', credentials);
+      return apiPost<AuthResponse>('/auth/login', credentials);
     },
     onSuccess: (data) => {
       // User state will be updated by layout (check /api/auth/me)
@@ -58,7 +58,7 @@ export function useMutationSignup() {
 
   return useMutation({
     mutationFn: async (data: SignupRequest) => {
-      return apiPost<AuthResponse>('/api/auth/signup', data);
+      return apiPost<AuthResponse>('/auth/signup', data);
     },
     onSuccess: (data) => {
       // User state will be updated by layout (check /api/auth/me)
@@ -76,7 +76,7 @@ export function useMutationLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      return apiPost<{ success: boolean }>('/api/auth/logout', {});
+      return apiPost<{ success: boolean }>('/auth/logout', {});
     },
     onSuccess: () => {
       // User state is cleared by useAuthToken.logout()
@@ -93,7 +93,7 @@ export function useMutationLogout() {
 export function useMutationRefreshToken() {
   return useMutation({
     mutationFn: async () => {
-      return apiPost<{ success: boolean }>('/api/auth/refresh-token', {});
+      return apiPost<{ success: boolean }>('/auth/refresh-token', {});
     },
     // No special handling needed, cookies are updated automatically
   });
