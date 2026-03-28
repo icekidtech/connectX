@@ -120,7 +120,7 @@ export function useMutationCreateConversation() {
 
   return useMutation({
     mutationFn: (userId: string) =>
-      apiPost<Conversation>('/api/conversations', { userId }),
+      apiPost<Conversation>('/conversations', { userId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatQueryKeys.conversations() });
     },
