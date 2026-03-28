@@ -36,7 +36,7 @@ export function PreferenceEditor({ onSave }: PreferenceEditorProps) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await fetch('/api/users/preferences', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/users/preferences`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
