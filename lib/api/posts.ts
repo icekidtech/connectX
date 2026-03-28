@@ -168,7 +168,7 @@ export function useMutationCreatePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePostDto) => apiPost<Post>('/api/posts', data),
+    mutationFn: (data: CreatePostDto) => apiPost<Post>('/posts', data),
     onSuccess: () => {
       // Invalidate feed to refetch
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.feed() });
