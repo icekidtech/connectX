@@ -42,7 +42,7 @@ export default function GoLivePage() {
     }
 
     try {
-      const response = await fetch('/api/streams', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/streams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
