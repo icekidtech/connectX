@@ -20,14 +20,14 @@ export class PostComment {
   @JoinColumn({ name: 'post_id' })
   post: Post;
 
-  @Column()
+  @Column({ name: 'post_id' })
   postId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'author_id' })
   author: User;
 
-  @Column()
+  @Column({ name: 'author_id' })
   authorId: string;
 
   @Column()
@@ -37,7 +37,7 @@ export class PostComment {
   @JoinColumn({ name: 'parent_comment_id' })
   parentComment: PostComment;
 
-  @Column({ nullable: true })
+  @Column({ name: 'parent_comment_id', nullable: true })
   parentCommentId: string;
 
   @Column({ default: 0 })
