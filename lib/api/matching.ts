@@ -103,7 +103,7 @@ export function useInfiniteQueryRecommendations(
   return useInfiniteQuery({
     queryKey: [...matchingQueryKeys.recommendations(), filters],
     queryFn: async ({ pageParam = 1 }) => {
-      const url = `/api/matching/recommendations?page=${pageParam}&${queryString}`;
+      const url = `/matching/recommendations?page=${pageParam}&${queryString}`;
       return apiGet<PaginatedResponse<RecommendedUser>>(url);
     },
     getNextPageParam: (lastPage, pages) => {
@@ -123,7 +123,7 @@ export function useQueryMatches(page = 1, limit = 20) {
     queryKey: [...matchingQueryKeys.matches(), page, limit],
     queryFn: () =>
       apiGet<PaginatedResponse<Match>>(
-        `/api/matching/matches?page=${page}&limit=${limit}`
+        `/matching/matches?page=${page}&limit=${limit}`
       ),
   });
 }
@@ -136,7 +136,7 @@ export function useMutationLikeUser(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiPost<void>(`/api/matching/${userId}/like`, {}),
+    mutationFn: () => apiPost<void>(`/matching/${userId}/like`, {}),
     onSuccess: () => {
       // Invalidate recommendations and matches
       queryClient.invalidateQueries({
@@ -154,7 +154,7 @@ export function useMutationUnlikeUser(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiDelete<void>(`/api/matching/${userId}/like`),
+    mutationFn: () => apiDelete<void>(`/matching/${userId}/like`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: matchingQueryKeys.recommendations(),
@@ -171,7 +171,7 @@ export function useMutationBlockUser(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiPost<void>(`/api/matching/${userId}/block`, {}),
+    mutationFn: () => apiPost<void>(`/matching/${userId}/block`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: matchingQueryKeys.recommendations(),
@@ -187,7 +187,7 @@ export function useMutationUnblockUser(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiDelete<void>(`/api/matching/${userId}/block`),
+    mutationFn: () => apiDelete<void>(`/matching/${userId}/block`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: matchingQueryKeys.recommendations(),

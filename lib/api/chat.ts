@@ -136,7 +136,7 @@ export function useMutationSendMessage(conversationId: string) {
 
   return useMutation({
     mutationFn: (content: string) =>
-      apiPost<Message>(`/api/conversations/${conversationId}/messages`, {
+      apiPost<Message>(`/conversations/${conversationId}/messages`, {
         content,
       }),
     onMutate: async (content) => {
@@ -211,7 +211,7 @@ export function useMutationMarkConversationRead(conversationId: string) {
 
   return useMutation({
     mutationFn: () =>
-      apiPost<void>(`/api/conversations/${conversationId}/mark-read`, {}),
+      apiPost<void>(`/conversations/${conversationId}/mark-read`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: chatQueryKeys.messages(conversationId),
@@ -232,7 +232,7 @@ export function useMutationArchiveConversation(conversationId: string) {
 
   return useMutation({
     mutationFn: () =>
-      apiPost<void>(`/api/conversations/${conversationId}/archive`, {}),
+      apiPost<void>(`/conversations/${conversationId}/archive`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatQueryKeys.conversations() });
     },

@@ -98,7 +98,7 @@ export function useInfiniteQueryFeed(pageSize = 10) {
     queryKey: postsQueryKeys.feed(),
     queryFn: async ({ pageParam = 1 }) => {
       return apiGet<PaginatedResponse<Post>>(
-        `/api/posts/feed?page=${pageParam}&limit=${pageSize}`
+        `/posts/feed?page=${pageParam}&limit=${pageSize}`
       );
     },
     getNextPageParam: (lastPage, pages) => {
@@ -130,7 +130,7 @@ export function useQueryPostLikes(postId: string, page = 1, limit = 10) {
     queryKey: postsQueryKeys.likes(postId),
     queryFn: () =>
       apiGet<PaginatedResponse<{ id: string; email: string }>>(
-        `/api/posts/${postId}/likes?page=${page}&limit=${limit}`
+        `/posts/${postId}/likes?page=${page}&limit=${limit}`
       ),
   });
 }
@@ -143,7 +143,7 @@ export function useQueryComments(postId: string, page = 1, limit = 10) {
     queryKey: postsQueryKeys.comments(postId),
     queryFn: () =>
       apiGet<PaginatedResponse<Comment>>(
-        `/api/posts/${postId}/comments?page=${page}&limit=${limit}`
+        `/posts/${postId}/comments?page=${page}&limit=${limit}`
       ),
   });
 }
@@ -156,7 +156,7 @@ export function useQueryCommentReplies(commentId: string, page = 1, limit = 10) 
     queryKey: postsQueryKeys.commentReplies(commentId),
     queryFn: () =>
       apiGet<PaginatedResponse<Comment>>(
-        `/api/posts/comment/${commentId}/replies?page=${page}&limit=${limit}`
+        `/posts/comment/${commentId}/replies?page=${page}&limit=${limit}`
       ),
   });
 }
@@ -184,7 +184,7 @@ export function useMutationUpdatePost(postId: string) {
 
   return useMutation({
     mutationFn: (data: UpdatePostDto) =>
-      apiPut<Post>(`/api/posts/${postId}`, data),
+      apiPut<Post>(`/posts/${postId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.post(postId) });
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.feed() });
@@ -199,7 +199,7 @@ export function useMutationDeletePost(postId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiDelete<void>(`/api/posts/${postId}`),
+    mutationFn: () => apiDelete<void>(`/posts/${postId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.feed() });
     },
@@ -213,7 +213,7 @@ export function useMutationLikePost(postId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiPost<void>(`/api/posts/${postId}/like`, {}),
+    mutationFn: () => apiPost<void>(`/posts/${postId}/like`, {}),
     onMutate: async () => {
       // Optimistic update
       await queryClient.cancelQueries({ queryKey: postsQueryKeys.post(postId) });
@@ -247,7 +247,7 @@ export function useMutationCommentOnPost(postId: string) {
 
   return useMutation({
     mutationFn: (data: CreateCommentDto) =>
-      apiPost<Comment>(`/api/posts/${postId}/comment`, data),
+      apiPost<Comment>(`/posts/${postId}/comment`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.comments(postId) });
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.post(postId) });
@@ -263,7 +263,7 @@ export function useMutationUpdateComment(commentId: string) {
 
   return useMutation({
     mutationFn: (data: { content: string }) =>
-      apiPut<Comment>(`/api/posts/comment/${commentId}`, data),
+      apiPut<Comment>(`/posts/comment/${commentId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         predicate: (query) =>
@@ -280,7 +280,7 @@ export function useMutationDeleteComment(commentId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiDelete<void>(`/api/posts/comment/${commentId}`),
+    mutationFn: () => apiDelete<void>(`/posts/comment/${commentId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         predicate: (query) =>
@@ -297,7 +297,7 @@ export function useMutationLikeComment(commentId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiPost<void>(`/api/posts/comment/${commentId}/like`, {}),
+    mutationFn: () => apiPost<void>(`/posts/comment/${commentId}/like`, {}),
     onMutate: async () => {
       // Optimistic update - need to handle multiple comment queries
       await queryClient.cancelQueries({

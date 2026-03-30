@@ -22,7 +22,7 @@ export function useMutationUploadImage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload/image', {
+      const response = await fetch('/upload/image', {
         method: 'POST',
         body: formData,
         credentials: 'include', // Send auth cookies
@@ -47,7 +47,7 @@ export function useMutationUploadVideo() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload/video', {
+      const response = await fetch('/upload/video', {
         method: 'POST',
         body: formData,
         credentials: 'include',
@@ -69,7 +69,7 @@ export function useMutationUploadVideo() {
 export function useMutationDeleteFile() {
   return useMutation({
     mutationFn: async (publicId: string): Promise<void> => {
-      const response = await fetch(`/api/upload/${publicId}`, {
+      const response = await fetch(`/upload/${publicId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
