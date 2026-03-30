@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, MessageCircle, Video, Users, Settings, LogOut } from 'lucide-react';
+import { AppNavigationSidebar, AppMobileNavigation } from '@/components/app-navigation';
 
 export default function Dashboard() {
   const [user] = useState({
@@ -47,24 +48,7 @@ export default function Dashboard() {
         <div className="grid gap-8 lg:grid-cols-4">
           {/* Sidebar */}
           <div className="hidden lg:block">
-            <nav className="space-y-2 sticky top-24">
-              {[
-                { label: 'Feed', icon: Heart, href: '/dashboard' },
-                { label: 'Discover', icon: Users, href: '/dashboard/discover' },
-                { label: 'Messages', icon: MessageCircle, href: '/dashboard/messages' },
-                { label: 'Live Streams', icon: Video, href: '/dashboard/streams' },
-              ].map((item) => (
-                <Link key={item.label} href={item.href}>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-foreground hover:bg-primary/10 hover:text-primary"
-                  >
-                    <item.icon className="h-4 w-4 mr-2" />
-                    {item.label}
-                  </Button>
-                </Link>
-              ))}
-            </nav>
+            <AppNavigationSidebar />
           </div>
 
           {/* Main Content */}
@@ -173,25 +157,7 @@ export default function Dashboard() {
       </div>
 
       {/* Mobile Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card lg:hidden">
-        <div className="flex items-center justify-around">
-          {[
-            { label: 'Feed', icon: Heart, href: '/dashboard' },
-            { label: 'Discover', icon: Users, href: '/dashboard/discover' },
-            { label: 'Messages', icon: MessageCircle, href: '/dashboard/messages' },
-            { label: 'Streams', icon: Video, href: '/dashboard/streams' },
-          ].map((item) => (
-            <Link key={item.label} href={item.href} className="flex-1">
-              <Button
-                variant="ghost"
-                className="w-full rounded-none justify-center py-6 text-foreground hover:bg-primary/10"
-              >
-                <item.icon className="h-5 w-5" />
-              </Button>
-            </Link>
-          ))}
-        </div>
-      </nav>
+      <AppMobileNavigation />
 
       {/* Mobile padding */}
       <div className="h-20 lg:hidden" />
