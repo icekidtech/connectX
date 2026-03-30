@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as express from 'express';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
@@ -40,6 +41,11 @@ async function bootstrap() {
 
   // Swagger API documentation
   setupSwagger(app);
+
+  // Set global API prefix from environment
+  const configService = app.get(ConfigService);
+  const apiPrefix = configService.get('API_PREFIX', 'api');
+  app.setGlobalPrefix(apiPrefix);
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
