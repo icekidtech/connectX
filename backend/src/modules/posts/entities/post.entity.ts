@@ -22,7 +22,7 @@ export class Post {
   @JoinColumn({ name: 'author_id' })
   author: User;
 
-  @Column()
+  @Column({ name: 'author_id' })
   authorId: string;
 
   @Column({ nullable: true })
