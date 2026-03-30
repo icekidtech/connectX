@@ -7,8 +7,8 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { apiPost } from '@/lib/fetch-proxy';
-import { User } from '@/hooks/use-auth-token';
+import { apiGet, apiPost } from '@/lib/fetch-proxy';
+import { User, useAuth } from '@/hooks/use-auth-token';
 
 // Login request/response types
 interface LoginRequest {
@@ -16,9 +16,11 @@ interface LoginRequest {
   password: string;
 }
 
-interface AuthResponse {
-  user: User;
-  accessToken?: string; // Not sent in body when using cookies, but kept for type compatibility
+interface LoginResponse {
+  id: string;
+  email: string;
+  username: string;
+  message: string;
 }
 
 // Signup request/response types
@@ -36,14 +38,16 @@ interface SignupRequest {
  */
 export function useMutationLogin() {
   const router = useRouter();
+  const { setUser } = useAuth();
 
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      return apiPost<AuthResponse>('/auth/login', credentials);
+      await apiPost<LoginResponse>('/auth/login', credentials);
+      // Immediately sync auth context from cookie-backed session.
+      return apiGet<User>('/auth/me');
     },
-    onSuccess: (data) => {
-      // User state will be updated by layout (check /api/auth/me)
-      // httpOnly cookies are automatically set by backend
+    onSuccess: (currentUser) => {
+      setUser(currentUser);
       router.push('/dashboard/feed');
     },
   });
@@ -55,13 +59,15 @@ export function useMutationLogin() {
  */
 export function useMutationSignup() {
   const router = useRouter();
+  const { setUser } = useAuth();
 
   return useMutation({
     mutationFn: async (data: SignupRequest) => {
-      return apiPost<AuthResponse>('/auth/signup', data);
+      await apiPost<LoginResponse>('/auth/signup', data);
+      return apiGet<User>('/auth/me');
     },
-    onSuccess: (data) => {
-      // User state will be updated by layout (check /api/auth/me)
+    onSuccess: (currentUser) => {
+      setUser(currentUser);
       router.push('/dashboard/feed');
     },
   });
