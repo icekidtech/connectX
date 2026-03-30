@@ -12,21 +12,21 @@ export class PostLike {
   @JoinColumn({ name: 'post_id' })
   post: Post;
 
-  @Column({ nullable: true })
+  @Column({ name: 'post_id', nullable: true })
   postId: string;
 
   @ManyToOne(() => PostComment, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'comment_id' })
   comment: PostComment;
 
-  @Column({ nullable: true })
+  @Column({ name: 'comment_id', nullable: true })
   commentId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: string;
 
   @CreateDateColumn()
