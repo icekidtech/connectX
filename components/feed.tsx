@@ -63,7 +63,7 @@ export function Feed() {
   }
 
   // Flatten pages into single array of posts
-  const posts = data?.pages.flatMap((page) => page.data) || [];
+  const posts = data?.pages.flatMap((page) => page.data ?? []) || [];
 
   if (posts.length === 0) {
     return (
