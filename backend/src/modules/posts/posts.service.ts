@@ -25,12 +25,19 @@ export class PostsService {
   ) {}
 
   async getFeed(page: number = 1, limit: number = 10) {
-    return await this.postRepository.find({
+    const [posts, total] = await this.postRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
       relations: ['author', 'author.profile', 'media', 'likes', 'comments'],
       order: { createdAt: 'DESC' },
     });
+
+    return {
+      data: posts,
+      page,
+      limit,
+      total,
+    };
   }
 
   async createPost(userId: string, caption: string, hashtags: string[] = [], isNsfw: boolean = false) {
