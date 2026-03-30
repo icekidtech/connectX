@@ -24,7 +24,7 @@ export interface NavItem {
 }
 
 export const navigationItems: NavItem[] = [
-  { label: 'Feed', icon: Heart, href: '/dashboard' },
+  { label: 'Feed', icon: Heart, href: '/dashboard/feed' },
   { label: 'Discover', icon: Users, href: '/dashboard/discover' },
   { label: 'Messages', icon: MessageCircle, href: '/dashboard/messages' },
   { label: 'Streams', icon: Video, href: '/dashboard/streams' },
@@ -42,12 +42,7 @@ interface AppNavigationProps {
 export function AppNavigation({ variant = 'header', className = '' }: AppNavigationProps) {
   const pathname = usePathname();
 
-  const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard';
-    }
-    return pathname.startsWith(href);
-  };
+  const isActive = (href: string) => pathname.startsWith(href);
 
   const visibleItems = navigationItems.filter(item => !item.admin);
 
