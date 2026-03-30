@@ -16,16 +16,26 @@ import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/fetch-proxy';
 // Type definitions
 export interface Post {
   id: string;
-  userId: string;
+  authorId: string;
   caption: string;
   hashtags: string[];
   isNsfw: boolean;
   visibility: 'public' | 'friends' | 'private';
-  mediaCount: number;
+  author?: {
+    id: string;
+    username?: string;
+    profile: {
+      firstName?: string;
+      lastName?: string;
+      displayName?: string;
+      avatar?: string;
+    } | null;
+  } | null;
   media: PostMedia[];
   likeCount: number;
   commentCount: number;
-  isLiked: boolean;
+  isLiked?: boolean;
+  liked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,10 +43,10 @@ export interface Post {
 export interface PostMedia {
   id: string;
   postId: string;
-  type: 'image' | 'video';
-  url: string;
+  mediaType: 'image' | 'video';
+  mediaUrl: string;
   publicId: string;
-  order: number;
+  displayOrder: number;
 }
 
 export interface Comment {
@@ -97,16 +107,29 @@ export function useInfiniteQueryFeed(pageSize = 10) {
   return useInfiniteQuery({
     queryKey: postsQueryKeys.feed(),
     queryFn: async ({ pageParam = 1 }) => {
-      return apiGet<PaginatedResponse<Post>>(
+      const response = await apiGet<PaginatedResponse<Post> | Post[]>(
         `/posts/feed?page=${pageParam}&limit=${pageSize}`
       );
+
+      // Backward compatibility: normalize array response to paginated shape.
+      if (Array.isArray(response)) {
+        return {
+          data: response,
+          page: Number(pageParam),
+          limit: pageSize,
+          total: response.length,
+        };
+      }
+
+      return response;
     },
-    getNextPageParam: (lastPage, pages) => {
-      // Calculate next page number
-      const nextPage = pages.length + 1;
-      // Stop if we've fetched all posts
-      if (lastPage.data.length < pageSize) return undefined;
-      return nextPage;
+    getNextPageParam: (lastPage) => {
+      const loadedCount = lastPage.page * lastPage.limit;
+      if (loadedCount >= lastPage.total) {
+        return undefined;
+      }
+
+      return lastPage.page + 1;
     },
     initialPageParam: 1,
   });
@@ -195,11 +218,11 @@ export function useMutationUpdatePost(postId: string) {
 /**
  * Delete post mutation
  */
-export function useMutationDeletePost(postId: string) {
+export function useMutationDeletePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiDelete<void>(`/posts/${postId}`),
+    mutationFn: (postId: string) => apiDelete<void>(`/posts/${postId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.feed() });
     },
@@ -209,12 +232,12 @@ export function useMutationDeletePost(postId: string) {
 /**
  * Like post mutation (optimistic update)
  */
-export function useMutationLikePost(postId: string) {
+export function useMutationLikePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiPost<void>(`/posts/${postId}/like`, {}),
-    onMutate: async () => {
+    mutationFn: (postId: string) => apiPost<void>(`/posts/${postId}/like`, {}),
+    onMutate: async (postId) => {
       // Optimistic update
       await queryClient.cancelQueries({ queryKey: postsQueryKeys.post(postId) });
       const previous = queryClient.getQueryData<Post>(postsQueryKeys.post(postId));
@@ -231,7 +254,7 @@ export function useMutationLikePost(postId: string) {
 
       return { previous };
     },
-    onError: (_err, _variables, context) => {
+    onError: (_err, postId, context) => {
       if (context?.previous) {
         queryClient.setQueryData(postsQueryKeys.post(postId), context.previous);
       }
@@ -242,13 +265,14 @@ export function useMutationLikePost(postId: string) {
 /**
  * Comment on post mutation
  */
-export function useMutationCommentOnPost(postId: string) {
+export function useMutationCommentOnPost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateCommentDto) =>
+    mutationFn: ({ postId, data }: { postId: string; data: CreateCommentDto }) =>
       apiPost<Comment>(`/posts/${postId}/comment`, data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      const postId = variables.postId;
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.comments(postId) });
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.post(postId) });
     },
