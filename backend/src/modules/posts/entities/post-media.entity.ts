@@ -17,7 +17,7 @@ export class PostMedia {
   @JoinColumn({ name: 'post_id' })
   post: Post;
 
-  @Column()
+  @Column({ name: 'post_id' })
   postId: string;
 
   @Column()
