@@ -46,7 +46,7 @@ export class AuthService {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,        // JS cannot access
       secure: isProduction,  // HTTPS only in production
-      sameSite: 'strict',    // CSRF protection
+      sameSite: isProduction ? 'strict' : 'lax', // 'strict' for prod, 'lax' for localhost cross-origin
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/',
     });
@@ -55,7 +55,7 @@ export class AuthService {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'strict',
+      sameSite: isProduction ? 'strict' : 'lax', // 'strict' for prod, 'lax' for localhost cross-origin
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/',
     });
