@@ -94,7 +94,7 @@ export function AppNavigation({ variant = 'header', className = '' }: AppNavigat
 
   if (variant === 'mobile') {
     return (
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card lg:hidden">
         <div className="flex items-center justify-around">
           {/* Show only main items on mobile bottom nav */}
           {[visibleItems[0], visibleItems[1], visibleItems[2], visibleItems[3]].map((item) => (
