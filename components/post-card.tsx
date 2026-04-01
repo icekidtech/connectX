@@ -13,17 +13,22 @@ import { useQueryComments, useMutationCommentOnPost } from '@/lib/api/posts';
 interface PostCardProps {
   post: {
     id: string;
+    authorId?: string;
     caption: string;
-    author: {
-      id: string;
-      profile: {
-        displayName: string;
-        avatar: string;
-      };
-    };
+    author?: {
+      id?: string;
+      username?: string;
+      profile?: {
+        displayName?: string;
+        firstName?: string;
+        lastName?: string;
+        avatar?: string;
+      } | null;
+    } | null;
     media: Array<{
       id: string;
-      url: string;
+      url?: string;
+      mediaUrl?: string;
       mediaType: string;
     }>;
     likeCount: number;
@@ -42,13 +47,31 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
 
+  const authorId = post.author?.id || post.authorId || '';
+  const authorDisplayName =
+    post.author?.profile?.displayName ||
+    [post.author?.profile?.firstName, post.author?.profile?.lastName].filter(Boolean).join(' ') ||
+    post.author?.username ||
+    'Unknown User';
+  const authorAvatar = post.author?.profile?.avatar || '';
+  const authorInitial = authorDisplayName.charAt(0).toUpperCase() || '?';
+  const profileHref = authorId ? `/profile/${authorId}` : '/dashboard/profile';
+
+  const mediaItems = post.media
+    .map((item) => ({
+      id: item.id,
+      url: item.url || item.mediaUrl || '',
+      mediaType: item.mediaType,
+    }))
+    .filter((item) => item.url.length > 0);
+
   // Fetch comments when section is opened
   const { data: commentsData, isLoading: isLoadingComments } = useQueryComments(
     post.id,
     showComments ? 1 : undefined, // Only fetch when showComments is true
     10
   );
-  const comments = commentsData?.pages?.[0]?.data || [];
+  const comments = commentsData?.data || [];
 
   // Mutation for posting comments
   const commentMutation = useMutationCommentOnPost();
@@ -71,30 +94,30 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
     );
   };
 
-  const isOwner = currentUserId === post.author.id;
+  const isOwner = Boolean(currentUserId && authorId && currentUserId === authorId);
 
   return (
     <Card className="border-border mb-6 overflow-hidden hover:border-primary/50 transition">
       {/* Post Header */}
       <CardHeader className="pb-3 border-b border-border">
         <div className="flex items-center justify-between">
-          <Link href={`/profile/${post.author.id}`} className="flex items-center gap-3 hover:opacity-80">
+          <Link href={profileHref} className="flex items-center gap-3 hover:opacity-80">
             <div className="w-10 h-10 rounded-full bg-muted overflow-hidden relative">
-              {post.author.profile.avatar ? (
+              {authorAvatar ? (
                 <Image
-                  src={post.author.profile.avatar}
-                  alt={post.author.profile.displayName}
+                  src={authorAvatar}
+                  alt={authorDisplayName}
                   fill
                   className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-                  {post.author.profile.displayName.charAt(0).toUpperCase()}
+                  {authorInitial}
                 </div>
               )}
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-foreground">{post.author.profile.displayName}</p>
+              <p className="font-semibold text-foreground">{authorDisplayName}</p>
               <p className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
               </p>
@@ -124,9 +147,9 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
         <p className="text-foreground whitespace-pre-wrap">{post.caption}</p>
 
         {/* Media */}
-        {post.media.length > 0 && (
-          <div className={`grid gap-2 ${post.media.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            {post.media.map((item) => (
+        {mediaItems.length > 0 && (
+          <div className={`grid gap-2 ${mediaItems.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {mediaItems.map((item) => (
               <div key={item.id} className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
                 {item.mediaType.startsWith('image') ? (
                   <Image
