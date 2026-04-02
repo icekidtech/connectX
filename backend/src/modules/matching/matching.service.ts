@@ -49,9 +49,13 @@ export class MatchingService {
       ],
     });
 
-    if (!currentUser || !currentUser.profile) {
-      throw new NotFoundException('User profile not found');
+    if (!currentUser) {
+      throw new NotFoundException('User not found');
     }
+
+    const currentUserProfile = currentUser.profile;
+    const currentUserLat = Number(currentUserProfile?.latitude ?? 0);
+    const currentUserLon = Number(currentUserProfile?.longitude ?? 0);
 
     // Get all users except self
     const allUsers = await this.userRepository.find({
@@ -75,19 +79,31 @@ export class MatchingService {
     // Filter by query criteria
     const filteredUsers = candidateUsers.map((user) => ({
       ...user,
-      distance: calculateDistance(
-        currentUser.profile.latitude || 0,
-        currentUser.profile.longitude || 0,
-        user.profile.latitude || 0,
-        user.profile.longitude || 0
-      ),
+      distance:
+        currentUserProfile && user.profile
+          ? calculateDistance(
+              currentUserLat,
+              currentUserLon,
+              Number(user.profile.latitude || 0),
+              Number(user.profile.longitude || 0),
+            )
+          : 0,
     })).filter((user) => {
       // Age filter
-      if (queryDto.ageMin && user.profile.dateOfBirth) {
+      if (queryDto.ageMin) {
+        if (!user.profile?.dateOfBirth) {
+          return false;
+        }
+
         const age = Math.floor((Date.now() - user.profile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
         if (age < queryDto.ageMin) return false;
       }
-      if (queryDto.ageMax && user.profile.dateOfBirth) {
+
+      if (queryDto.ageMax) {
+        if (!user.profile?.dateOfBirth) {
+          return false;
+        }
+
         const age = Math.floor((Date.now() - user.profile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
         if (age > queryDto.ageMax) return false;
       }
@@ -96,11 +112,19 @@ export class MatchingService {
       if (queryDto.maxDistance && user.distance > queryDto.maxDistance) return false;
 
       // Gender filter
-      if (queryDto.genderFilter && user.profile.gender !== queryDto.genderFilter) return false;
+      if (queryDto.genderFilter) {
+        if (!user.profile?.gender) {
+          return false;
+        }
+
+        if (user.profile.gender !== queryDto.genderFilter) {
+          return false;
+        }
+      }
 
       // Relationship type filter
       if (queryDto.relationshipTypeFilter && queryDto.relationshipTypeFilter.length > 0) {
-        const preferences = currentUser.profile.lookingFor || [];
+        const preferences = user.profile?.lookingFor || [];
         const hasOverlap = queryDto.relationshipTypeFilter.some((type) =>
           preferences.includes(type)
         );
@@ -124,12 +148,14 @@ export class MatchingService {
     const recommendedUsers = filteredUsers.filter((u) => !matchedUserIds.has(u.id));
 
     // Score and sort
+    const currentUserAge = currentUserProfile?.dateOfBirth
+      ? Math.floor((Date.now() - currentUserProfile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      : 30;
+
     const scoredUsers = recommendedUsers.map((user) => {
-      const userAge = currentUser.profile.dateOfBirth
-        ? Math.floor((Date.now() - currentUser.profile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
-        : 30;
+      const userAge = currentUserAge;
       
-      const targetAge = user.profile.dateOfBirth
+      const targetAge = user.profile?.dateOfBirth
         ? Math.floor((Date.now() - user.profile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
         : 30;
 
@@ -141,11 +167,11 @@ export class MatchingService {
         distance: user.distance,
         userAge,
         targetAge,
-        targetGender: user.profile.gender,
-        userGenderPreference: currentUser.profile.preferences?.genderPreference?.[0] || 'any',
+        targetGender: user.profile?.gender || '',
+        userGenderPreference: currentUserProfile?.preferences?.genderPreference?.[0] || 'any',
         commonInterestCount,
-        userRelationshipTypes: currentUser.profile.lookingFor || [],
-        targetRelationshipTypes: user.profile.lookingFor || [],
+        userRelationshipTypes: currentUserProfile?.lookingFor || [],
+        targetRelationshipTypes: user.profile?.lookingFor || [],
         targetIsOnline: false,
         maxDistance: queryDto.maxDistance || 100,
       });
@@ -161,11 +187,13 @@ export class MatchingService {
 
     const mappedUsers = paginatedUsers.map((user) => ({
       id: user.id,
-      firstName: user.profile.firstName,
-      lastName: user.profile.lastName,
-      age: Math.floor((Date.now() - (user.profile.dateOfBirth || new Date()).getTime()) / (365.25 * 24 * 60 * 60 * 1000)),
-      bio: user.profile.bio,
-      location: user.profile.location,
+      firstName: user.profile?.firstName || user.username,
+      lastName: user.profile?.lastName || '',
+      age: user.profile?.dateOfBirth
+        ? Math.floor((Date.now() - user.profile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+        : 0,
+      bio: user.profile?.bio || '',
+      location: user.profile?.location || 'Unknown location',
       distance: user.distance,
       profilePhotoUrl: user.photos?.[0]?.photoUrl,
       commonInterests: user.interests.filter((ci) =>
