@@ -7,6 +7,7 @@ import { DiscoverCard } from '@/components/discover-card';
 import { PreferenceEditor } from '@/components/preference-editor';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useInfiniteQueryRecommendations, useMutationLikeUser } from '@/lib/api/matching';
+import type { RecommendedUser as ApiRecommendedUser } from '@/lib/api/matching';
 import { useIntersection } from '@/components/intersection-observer';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,6 +21,49 @@ interface RecommendedUser {
   lookingFor: string[];
   interests: Array<{ id: string; name: string }>;
   compatibilityScore: number;
+}
+
+function normalizeRecommendedUser(user: ApiRecommendedUser): RecommendedUser {
+  const displayName =
+    [user.firstName, user.lastName].filter(Boolean).join(' ').trim() ||
+    user.displayName ||
+    'Unknown User';
+
+  const interestsFromCommon = Array.isArray(user.commonInterests)
+    ? user.commonInterests.map((name: string, index: number) => ({
+        id: `${user.id}-interest-${index}`,
+        name,
+      }))
+    : [];
+
+  const interests = Array.isArray(user.interests) && user.interests.length > 0
+    ? user.interests
+    : interestsFromCommon;
+
+  const lookingFor = Array.isArray(user.lookingFor)
+    ? user.lookingFor
+    : Array.isArray(user.preferences?.lookingFor)
+      ? user.preferences.lookingFor
+      : [];
+
+  const location =
+    typeof user.location === 'string'
+      ? user.location
+      : user.location && typeof user.location === 'object'
+        ? `${user.location.latitude}, ${user.location.longitude}`
+        : 'Unknown location';
+
+  return {
+    id: user.id,
+    displayName,
+    avatar: user.avatar || user.profilePhotoUrl || user.profilePhoto || '',
+    age: Number(user.age) || 0,
+    location,
+    bio: user.bio || '',
+    lookingFor,
+    interests,
+    compatibilityScore: Number(user.compatibilityScore) || 0,
+  };
 }
 
 export default function DiscoverPage() {
@@ -51,7 +95,9 @@ export default function DiscoverPage() {
   );
 
   // Flatten all pages into single array
-  const allUsers = data?.pages.flatMap((page) => page.data) || [];
+  const allUsers = (data?.pages.flatMap((page) => page.data ?? []) || []).map(
+    (user) => normalizeRecommendedUser(user),
+  );
   const currentUser = allUsers[currentIndex];
 
   const handleLike = (userId: string) => {
