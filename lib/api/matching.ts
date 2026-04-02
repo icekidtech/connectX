@@ -88,6 +88,18 @@ export interface Match {
   lastInteraction: string;
 }
 
+export interface FollowingUser {
+  followId: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  bio?: string;
+  location?: string;
+  profilePhotoUrl?: string | null;
+  followedAt: string;
+  status: 'liked' | 'matched' | 'messaged' | 'reported';
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   page: number;
@@ -110,6 +122,7 @@ const matchingQueryKeys = {
   all: ['matching'] as const,
   recommendations: () => [...matchingQueryKeys.all, 'recommendations'] as const,
   matches: () => [...matchingQueryKeys.all, 'matches'] as const,
+  following: (page: number, limit: number) => [...matchingQueryKeys.all, 'following', page, limit] as const,
 };
 
 function normalizePaginatedResponse<T>(
@@ -185,6 +198,22 @@ export function useQueryMatches(page = 1, limit = 20) {
 }
 
 /**
+ * Following query (users current user has liked)
+ */
+export function useQueryFollowing(page = 1, limit = 20) {
+  return useQuery({
+    queryKey: matchingQueryKeys.following(page, limit),
+    queryFn: async () => {
+      const response = await apiGet<PaginatedResponse<FollowingUser> | FollowingUser[]>(
+        `/matching/following?page=${page}&limit=${limit}`
+      );
+
+      return normalizePaginatedResponse(response, page, limit);
+    },
+  });
+}
+
+/**
  * Like user mutation (optimistic update)
  * When both users like each other, they become a match (status='matched')
  */
@@ -199,6 +228,7 @@ export function useMutationLikeUser() {
         queryKey: matchingQueryKeys.recommendations(),
       });
       queryClient.invalidateQueries({ queryKey: matchingQueryKeys.matches() });
+      queryClient.invalidateQueries({ queryKey: [...matchingQueryKeys.all, 'following'] });
     },
   });
 }
@@ -216,6 +246,7 @@ export function useMutationUnlikeUser(userId: string) {
         queryKey: matchingQueryKeys.recommendations(),
       });
       queryClient.invalidateQueries({ queryKey: matchingQueryKeys.matches() });
+      queryClient.invalidateQueries({ queryKey: [...matchingQueryKeys.all, 'following'] });
     },
   });
 }
