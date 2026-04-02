@@ -8,6 +8,7 @@ import {
   MessageCircle, 
   Video, 
   Users, 
+  User,
   Settings, 
   CheckCircle, 
   Bell, 
@@ -26,6 +27,7 @@ export interface NavItem {
 export const navigationItems: NavItem[] = [
   { label: 'Feed', icon: Heart, href: '/dashboard/feed' },
   { label: 'Discover', icon: Users, href: '/dashboard/discover' },
+  { label: 'Profile', icon: User, href: '/dashboard/profile' },
   { label: 'Messages', icon: MessageCircle, href: '/dashboard/messages' },
   { label: 'Streams', icon: Video, href: '/dashboard/streams' },
   { label: 'Notifications', icon: Bell, href: '/dashboard/notifications' },
