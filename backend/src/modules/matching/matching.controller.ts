@@ -9,6 +9,8 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
@@ -100,6 +102,26 @@ export class MatchingController {
     @Query('limit') limit: number = 10,
   ) {
     return this.matchingService.getMatches(req.user.id, page, limit);
+  }
+
+  /**
+   * Get all users the current user follows (liked users)
+   */
+  @Get('following')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary: 'Get following users',
+    description: 'Get paginated list of users the current user has liked/followed',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  @ApiResponse({ status: 200, description: 'Following list retrieved' })
+  async getFollowing(
+    @Request() req: any,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.matchingService.getFollowing(req.user.id, page, limit);
   }
 
   /**
