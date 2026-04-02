@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull, Not } from 'typeorm';
+import { Repository, IsNull, QueryFailedError } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { PostLike } from './entities/post-like.entity';
 import { PostComment } from './entities/post-comment.entity';
@@ -23,6 +23,13 @@ export class PostsService {
     @InjectRepository(PostMedia)
     private postMediaRepository: Repository<PostMedia>,
   ) {}
+
+  private isUniqueViolation(error: unknown): boolean {
+    return (
+      error instanceof QueryFailedError &&
+      (error as QueryFailedError & { driverError?: { code?: string } }).driverError?.code === '23505'
+    );
+  }
 
   async getFeed(page: number = 1, limit: number = 10) {
     const [posts, total] = await this.postRepository.findAndCount({
@@ -87,26 +94,37 @@ export class PostsService {
   }
 
   async likePost(postId: string, userId: string) {
-    const post = await this.getPostById(postId);
+    const postExists = await this.postRepository.exist({ where: { id: postId } });
 
-    // Check if already liked
-    const existingLike = await this.postLikeRepository.findOne({
+    if (!postExists) {
+      throw new NotFoundException('Post not found');
+    }
+
+    // Check if already liked (including potential duplicate rows).
+    const existingLikes = await this.postLikeRepository.find({
       where: { postId, userId },
     });
 
-    if (existingLike) {
+    if (existingLikes.length > 0) {
       // Unlike
-      await this.postLikeRepository.delete(existingLike.id);
-      post.likeCount = Math.max(0, post.likeCount - 1);
+      await this.postLikeRepository.delete(existingLikes.map((like) => like.id));
     } else {
       // Like
       const like = this.postLikeRepository.create({ postId, userId });
-      await this.postLikeRepository.save(like);
-      post.likeCount += 1;
+      try {
+        await this.postLikeRepository.save(like);
+      } catch (error) {
+        // Concurrent like requests may race. Unique index keeps a single row.
+        if (!this.isUniqueViolation(error)) {
+          throw error;
+        }
+      }
     }
 
-    await this.postRepository.save(post);
-    return post;
+    const likeCount = await this.postLikeRepository.count({ where: { postId } });
+    await this.postRepository.update({ id: postId }, { likeCount });
+
+    return this.getPostById(postId);
   }
 
   async getPostLikes(postId: string, page: number = 1, limit: number = 10) {
@@ -119,7 +137,11 @@ export class PostsService {
   }
 
   async commentOnPost(postId: string, userId: string, content: string) {
-    const post = await this.getPostById(postId);
+    const postExists = await this.postRepository.exist({ where: { id: postId } });
+
+    if (!postExists) {
+      throw new NotFoundException('Post not found');
+    }
 
     const comment = this.postCommentRepository.create({
       postId,
@@ -128,8 +150,7 @@ export class PostsService {
     });
 
     await this.postCommentRepository.save(comment);
-    post.commentCount += 1;
-    await this.postRepository.save(post);
+    await this.postRepository.increment({ id: postId }, 'commentCount', 1);
 
     return comment;
   }
@@ -158,6 +179,15 @@ export class PostsService {
     }
 
     await this.postCommentRepository.delete({ id: commentId });
+
+    // Keep post comment counter accurate and non-negative.
+    await this.postRepository
+      .createQueryBuilder()
+      .update(Post)
+      .set({ commentCount: () => 'GREATEST("commentCount" - 1, 0)' })
+      .where('id = :postId', { postId: comment.postId })
+      .execute();
+
     return { success: true };
   }
 
@@ -241,26 +271,39 @@ export class PostsService {
       throw new NotFoundException('Comment not found');
     }
 
-    const existingLike = await this.postLikeRepository.findOne({
+    const existingLikes = await this.postLikeRepository.find({
       where: { commentId, userId },
     });
 
-    if (existingLike) {
+    if (existingLikes.length > 0) {
       // Unlike
-      await this.postLikeRepository.delete(existingLike.id);
-      comment.likeCount = Math.max(0, comment.likeCount - 1);
+      await this.postLikeRepository.delete(existingLikes.map((like) => like.id));
     } else {
       // Like
       const like = this.postLikeRepository.create({
         commentId,
         userId,
       });
-      await this.postLikeRepository.save(like);
-      comment.likeCount += 1;
+      try {
+        await this.postLikeRepository.save(like);
+      } catch (error) {
+        // Concurrent like requests may race. Unique index keeps a single row.
+        if (!this.isUniqueViolation(error)) {
+          throw error;
+        }
+      }
     }
 
-    await this.postCommentRepository.save(comment);
-    return comment;
+    const likeCount = await this.postLikeRepository.count({ where: { commentId } });
+    await this.postCommentRepository.update({ id: commentId }, { likeCount });
+
+    const updatedComment = await this.postCommentRepository.findOne({ where: { id: commentId } });
+
+    if (!updatedComment) {
+      throw new NotFoundException('Comment not found after update');
+    }
+
+    return updatedComment;
   }
 
   /**
