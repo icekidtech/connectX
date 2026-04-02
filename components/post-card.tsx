@@ -68,8 +68,9 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
   // Fetch comments when section is opened
   const { data: commentsData, isLoading: isLoadingComments } = useQueryComments(
     post.id,
-    showComments ? 1 : undefined, // Only fetch when showComments is true
-    10
+    1,
+    10,
+    showComments,
   );
   const comments = commentsData?.data || [];
 
@@ -233,35 +234,50 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
             ) : comments.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">No comments yet</p>
             ) : (
-              comments.map((comment: any) => (
-                <div key={comment.id} className="flex gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden relative">
-                    {comment.author?.profile?.avatar ? (
-                      <Image
-                        src={comment.author.profile.avatar}
-                        alt={comment.author.profile.displayName}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-bold">
-                        {comment.author?.profile?.displayName?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+              comments.map((comment: any) => {
+                const commentDisplayName =
+                  comment.author?.profile?.displayName ||
+                  [
+                    comment.author?.profile?.firstName,
+                    comment.author?.profile?.lastName,
+                  ]
+                    .filter(Boolean)
+                    .join(' ') ||
+                  comment.author?.username ||
+                  'Unknown User';
+                const commentAvatar = comment.author?.profile?.avatar || '';
+                const commentInitial = commentDisplayName.charAt(0).toUpperCase() || '?';
+
+                return (
+                  <div key={comment.id} className="flex gap-2">
+                    <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden relative">
+                      {commentAvatar ? (
+                        <Image
+                          src={commentAvatar}
+                          alt={commentDisplayName}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-bold">
+                          {commentInitial}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        {commentDisplayName}
+                      </p>
+                      <p className="text-sm text-foreground bg-muted rounded px-3 py-2">
+                        {comment.content}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">
-                      {comment.author?.profile?.displayName}
-                    </p>
-                    <p className="text-sm text-foreground bg-muted rounded px-3 py-2">
-                      {comment.content}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                    </p>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
