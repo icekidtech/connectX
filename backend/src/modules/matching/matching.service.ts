@@ -159,7 +159,7 @@ export class MatchingService {
     // Paginate
     const paginatedUsers = scoredUsers.slice(skip, skip + limit);
 
-    return paginatedUsers.map((user) => ({
+    const mappedUsers = paginatedUsers.map((user) => ({
       id: user.id,
       firstName: user.profile.firstName,
       lastName: user.profile.lastName,
@@ -175,6 +175,13 @@ export class MatchingService {
       isOnline: false, // Simplified for Phase 2
       status: 'recommended',
     }));
+
+    return {
+      data: mappedUsers,
+      page,
+      limit,
+      total: scoredUsers.length,
+    };
   }
 
   /**
