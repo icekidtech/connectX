@@ -1,9 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, Column, Index } from 'typeorm';
 import { Post } from './post.entity';
 import { PostComment } from './post-comment.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('post_likes')
+@Index('UQ_post_likes_post_user', ['postId', 'userId'], {
+  unique: true,
+  where: '"post_id" IS NOT NULL',
+})
+@Index('UQ_post_likes_comment_user', ['commentId', 'userId'], {
+  unique: true,
+  where: '"comment_id" IS NOT NULL',
+})
 export class PostLike {
   @PrimaryGeneratedColumn('uuid')
   id: string;
