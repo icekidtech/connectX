@@ -11,6 +11,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
 import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/fetch-proxy';
 
 // Type definitions
@@ -32,6 +33,13 @@ export interface Post {
     } | null;
   } | null;
   media: PostMedia[];
+  likes?: Array<{
+    id: string;
+    userId?: string;
+    user?: {
+      id: string;
+    } | null;
+  }>;
   likeCount: number;
   commentCount: number;
   isLiked?: boolean;
@@ -99,6 +107,35 @@ const postsQueryKeys = {
   commentReplies: (commentId: string) => [...postsQueryKeys.all, 'replies', commentId] as const,
 };
 
+function normalizePaginatedResponse<T>(
+  response: PaginatedResponse<T> | T[],
+  page: number,
+  limit: number,
+): PaginatedResponse<T> {
+  if (Array.isArray(response)) {
+    return {
+      data: response,
+      page,
+      limit,
+      total: response.length,
+    };
+  }
+
+  return response;
+}
+
+function togglePostLikeState(post: Post): Post {
+  const currentlyLiked = Boolean(post.liked ?? post.isLiked);
+  const liked = !currentlyLiked;
+
+  return {
+    ...post,
+    liked,
+    isLiked: liked,
+    likeCount: Math.max(0, (post.likeCount ?? 0) + (liked ? 1 : -1)),
+  };
+}
+
 /**
  * Infinite feed query (Instagram-style)
  * Auto-loads next page when user scrolls
@@ -111,17 +148,7 @@ export function useInfiniteQueryFeed(pageSize = 10) {
         `/posts/feed?page=${pageParam}&limit=${pageSize}`
       );
 
-      // Backward compatibility: normalize array response to paginated shape.
-      if (Array.isArray(response)) {
-        return {
-          data: response,
-          page: Number(pageParam),
-          limit: pageSize,
-          total: response.length,
-        };
-      }
-
-      return response;
+      return normalizePaginatedResponse(response, Number(pageParam), pageSize);
     },
     getNextPageParam: (lastPage) => {
       const loadedCount = lastPage.page * lastPage.limit;
@@ -151,23 +178,35 @@ export function useQueryPost(postId: string) {
 export function useQueryPostLikes(postId: string, page = 1, limit = 10) {
   return useQuery({
     queryKey: postsQueryKeys.likes(postId),
-    queryFn: () =>
-      apiGet<PaginatedResponse<{ id: string; email: string }>>(
+    queryFn: async () => {
+      const response = await apiGet<PaginatedResponse<{ id: string; email: string }> | { id: string; email: string }[]>(
         `/posts/${postId}/likes?page=${page}&limit=${limit}`
-      ),
+      );
+
+      return normalizePaginatedResponse(response, page, limit);
+    },
   });
 }
 
 /**
  * Comments query
  */
-export function useQueryComments(postId: string, page = 1, limit = 10) {
+export function useQueryComments(
+  postId: string,
+  page = 1,
+  limit = 10,
+  enabled = true,
+) {
   return useQuery({
     queryKey: postsQueryKeys.comments(postId),
-    queryFn: () =>
-      apiGet<PaginatedResponse<Comment>>(
+    queryFn: async () => {
+      const response = await apiGet<PaginatedResponse<Comment> | Comment[]>(
         `/posts/${postId}/comments?page=${page}&limit=${limit}`
-      ),
+      );
+
+      return normalizePaginatedResponse(response, page, limit);
+    },
+    enabled,
   });
 }
 
@@ -177,10 +216,13 @@ export function useQueryComments(postId: string, page = 1, limit = 10) {
 export function useQueryCommentReplies(commentId: string, page = 1, limit = 10) {
   return useQuery({
     queryKey: postsQueryKeys.commentReplies(commentId),
-    queryFn: () =>
-      apiGet<PaginatedResponse<Comment>>(
+    queryFn: async () => {
+      const response = await apiGet<PaginatedResponse<Comment> | Comment[]>(
         `/posts/comment/${commentId}/replies?page=${page}&limit=${limit}`
-      ),
+      );
+
+      return normalizePaginatedResponse(response, page, limit);
+    },
   });
 }
 
@@ -236,28 +278,76 @@ export function useMutationLikePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (postId: string) => apiPost<void>(`/posts/${postId}/like`, {}),
+    mutationFn: (postId: string) => apiPost<Post>(`/posts/${postId}/like`, {}),
     onMutate: async (postId) => {
-      // Optimistic update
-      await queryClient.cancelQueries({ queryKey: postsQueryKeys.post(postId) });
-      const previous = queryClient.getQueryData<Post>(postsQueryKeys.post(postId));
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: postsQueryKeys.post(postId) }),
+        queryClient.cancelQueries({ queryKey: postsQueryKeys.feed() }),
+      ]);
 
-      if (previous) {
-        queryClient.setQueryData(postsQueryKeys.post(postId), {
-          ...previous,
-          isLiked: !previous.isLiked,
-          likeCount: previous.isLiked
-            ? previous.likeCount - 1
-            : previous.likeCount + 1,
-        });
+      const previousPost = queryClient.getQueryData<Post>(postsQueryKeys.post(postId));
+      const previousFeed = queryClient.getQueryData<InfiniteData<PaginatedResponse<Post>>>(
+        postsQueryKeys.feed(),
+      );
+
+      if (previousPost) {
+        queryClient.setQueryData(postsQueryKeys.post(postId), togglePostLikeState(previousPost));
       }
 
-      return { previous };
+      if (previousFeed) {
+        queryClient.setQueryData<InfiniteData<PaginatedResponse<Post>>>(
+          postsQueryKeys.feed(),
+          {
+            ...previousFeed,
+            pages: previousFeed.pages.map((page) => ({
+              ...page,
+              data: page.data.map((post) =>
+                post.id === postId ? togglePostLikeState(post) : post,
+              ),
+            })),
+          },
+        );
+      }
+
+      return { previousPost, previousFeed, postId };
     },
-    onError: (_err, postId, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(postsQueryKeys.post(postId), context.previous);
+    onError: (_err, _postId, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(
+          postsQueryKeys.post(context.postId),
+          context.previousPost,
+        );
       }
+
+      if (context?.previousFeed) {
+        queryClient.setQueryData(postsQueryKeys.feed(), context.previousFeed);
+      }
+    },
+    onSuccess: (post) => {
+      queryClient.setQueryData(postsQueryKeys.post(post.id), post);
+
+      queryClient.setQueryData<InfiniteData<PaginatedResponse<Post>>>(
+        postsQueryKeys.feed(),
+        (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              data: page.data.map((item) =>
+                item.id === post.id ? { ...item, ...post } : item,
+              ),
+            })),
+          };
+        },
+      );
+    },
+    onSettled: (_data, _error, postId) => {
+      queryClient.invalidateQueries({ queryKey: postsQueryKeys.feed() });
+      queryClient.invalidateQueries({ queryKey: postsQueryKeys.post(postId) });
     },
   });
 }
@@ -275,6 +365,7 @@ export function useMutationCommentOnPost() {
       const postId = variables.postId;
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.comments(postId) });
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.post(postId) });
+      queryClient.invalidateQueries({ queryKey: postsQueryKeys.feed() });
     },
   });
 }
