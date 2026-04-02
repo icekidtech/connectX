@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsArray, Min, Max } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { IsNumber, IsOptional, IsArray, Min, Max, IsInt, IsString } from 'class-validator';
 
 export class GetRecommendationsQueryDto {
   @ApiPropertyOptional({
@@ -8,7 +9,8 @@ export class GetRecommendationsQueryDto {
     minimum: 1,
   })
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   @Min(1)
   page?: number = 1;
 
@@ -19,7 +21,8 @@ export class GetRecommendationsQueryDto {
     maximum: 50,
   })
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   @Min(1)
   @Max(50)
   limit?: number = 10;
@@ -30,6 +33,7 @@ export class GetRecommendationsQueryDto {
     minimum: 18,
   })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(18)
   ageMin?: number;
@@ -40,6 +44,7 @@ export class GetRecommendationsQueryDto {
     maximum: 150,
   })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Max(150)
   ageMax?: number;
@@ -50,6 +55,7 @@ export class GetRecommendationsQueryDto {
     minimum: 0,
   })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   maxDistance?: number;
@@ -68,6 +74,21 @@ export class GetRecommendationsQueryDto {
     type: [String],
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    return undefined;
+  })
   @IsArray()
+  @IsString({ each: true })
   relationshipTypeFilter?: string[];
 }
