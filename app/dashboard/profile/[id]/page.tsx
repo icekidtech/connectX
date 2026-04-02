@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, Mail, Flag, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
+import { apiGet, apiPost } from '@/lib/fetch-proxy';
 
 interface UserProfile {
   id: string;
@@ -33,15 +34,41 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`/api/users/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const data = await response.json();
-        setProfile(data);
+        const data = await apiGet<any>(`/users/${userId}`);
+
+        const displayName =
+          [data.profile?.firstName, data.profile?.lastName].filter(Boolean).join(' ').trim() ||
+          data.username ||
+          'Unknown User';
+
+        const age = data.profile?.dateOfBirth
+          ? Math.floor((Date.now() - new Date(data.profile.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+          : 0;
+
+        const mappedProfile: UserProfile = {
+          id: data.id,
+          displayName,
+          avatar: data.photos?.[0]?.photoUrl || '',
+          age,
+          location: data.profile?.location || 'Unknown location',
+          bio: data.profile?.bio || '',
+          lookingFor: data.profile?.lookingFor || [],
+          interests: (data.interests || []).map((interest: any) => ({
+            id: interest.id,
+            name: interest.name,
+          })),
+          photos: (data.photos || []).map((photo: any) => ({
+            id: photo.id,
+            url: photo.photoUrl,
+          })),
+          verified: Boolean(data.isVerified),
+          createdAt: data.createdAt,
+        };
+
+        setProfile(mappedProfile);
       } catch (error) {
         console.error('[v0] Failed to fetch profile:', error);
+        setProfile(null);
       } finally {
         setLoading(false);
       }
@@ -52,12 +79,7 @@ export default function UserProfilePage() {
 
   const handleLike = async () => {
     try {
-      await fetch(`/api/matching/${userId}/like`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      await apiPost(`/matching/${userId}/like`, {});
       setLiked(true);
     } catch (error) {
       console.error('[v0] Failed to like user:', error);
@@ -65,20 +87,8 @@ export default function UserProfilePage() {
   };
 
   const handleMessage = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/conversations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ participantIds: [userId] }),
-      });
-      const conversation = await response.json();
-      window.location.href = `/dashboard/messages/${conversation.id}`;
-    } catch (error) {
-      console.error('[v0] Failed to start conversation:', error);
-    }
+    // Chat flow in this project is centralized under messages routes.
+    window.location.href = '/dashboard/messages';
   };
 
   if (loading) {
