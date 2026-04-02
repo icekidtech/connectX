@@ -62,8 +62,21 @@ export function Feed() {
     );
   }
 
-  // Flatten pages into single array of posts
-  const posts = data?.pages.flatMap((page) => page.data ?? []) || [];
+  // Flatten pages into a single array and derive current user's like state.
+  const posts = (data?.pages.flatMap((page) => page.data ?? []) || []).map((post) => {
+    const likedFromRelations = Boolean(
+      user?.id &&
+        Array.isArray(post.likes) &&
+        post.likes.some((like) => like?.userId === user.id || like?.user?.id === user.id),
+    );
+    const liked = Boolean(post.liked ?? post.isLiked ?? likedFromRelations);
+
+    return {
+      ...post,
+      liked,
+      isLiked: liked,
+    };
+  });
 
   if (posts.length === 0) {
     return (
