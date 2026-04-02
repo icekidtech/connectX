@@ -55,7 +55,7 @@ export function PostCard({ post, onDelete, onLike, currentUserId }: PostCardProp
     'Unknown User';
   const authorAvatar = post.author?.profile?.avatar || '';
   const authorInitial = authorDisplayName.charAt(0).toUpperCase() || '?';
-  const profileHref = authorId ? `/profile/${authorId}` : '/dashboard/profile';
+  const profileHref = authorId ? `/dashboard/profile/${authorId}` : '/dashboard/profile';
 
   const mediaItems = post.media
     .map((item) => ({
