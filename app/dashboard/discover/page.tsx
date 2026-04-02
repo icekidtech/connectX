@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { DiscoverCard } from '@/components/discover-card';
 import { PreferenceEditor } from '@/components/preference-editor';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useInfiniteQueryRecommendations, useMutationLikeUser } from '@/lib/api/matching';
+import { useInfiniteQueryRecommendations, useMutationLikeUser, useQueryFollowing } from '@/lib/api/matching';
 import type { RecommendedUser as ApiRecommendedUser } from '@/lib/api/matching';
 import { useIntersection } from '@/components/intersection-observer';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface RecommendedUser {
   id: string;
@@ -69,6 +71,7 @@ function normalizeRecommendedUser(user: ApiRecommendedUser): RecommendedUser {
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedUser, setSelectedUser] = useState<RecommendedUser | null>(null);
+  const [mode, setMode] = useState<'discover' | 'following'>('discover');
   const [filters, setFilters] = useState({});
   const { toast } = useToast();
 
@@ -85,6 +88,12 @@ export default function DiscoverPage() {
   // Like mutation
   const likeMutation = useMutationLikeUser();
 
+  // Following query
+  const {
+    data: followingData,
+    isLoading: isLoadingFollowing,
+  } = useQueryFollowing(1, 50);
+
   // Intersection observer for loading next page
   const nextPageRef = useIntersection(
     useCallback(() => {
@@ -99,6 +108,7 @@ export default function DiscoverPage() {
     (user) => normalizeRecommendedUser(user),
   );
   const currentUser = allUsers[currentIndex];
+  const followingUsers = followingData?.data || [];
 
   const handleLike = (userId: string) => {
     likeMutation.mutate(userId, {
@@ -134,43 +144,6 @@ export default function DiscoverPage() {
     setSelectedUser(null);
   };
 
-  if (isLoading) {
-    return <div className="p-8 text-center text-lg">Loading recommendations...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="p-8">
-        <Card className="bg-destructive/10 border-destructive/20">
-          <CardContent className="pt-12 pb-12 text-center">
-            <p className="text-lg text-destructive mb-4">Failed to load recommendations</p>
-            <Button variant="outline" onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (allUsers.length === 0) {
-    return (
-      <div className="p-8">
-        <h1 className="text-3xl font-bold mb-8">Discover</h1>
-        <Card>
-          <CardContent className="pt-12 pb-12 text-center">
-            <p className="text-lg text-muted-foreground mb-4">
-              No recommendations available at this time.
-            </p>
-            <p className="text-sm text-muted-foreground mb-6">
-              Try adjusting your preferences or check back later!
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
       <div className="max-w-2xl mx-auto py-8 px-4">
@@ -183,27 +156,119 @@ export default function DiscoverPage() {
           </div>
         </div>
 
-        {/* Preference Editor */}
-        <div className="mb-8">
-          <PreferenceEditor onSave={(newFilters) => setFilters(newFilters)} />
+        <div className="grid grid-cols-2 gap-2 mb-6">
+          <Button
+            variant={mode === 'discover' ? 'default' : 'outline'}
+            onClick={() => setMode('discover')}
+          >
+            Discover
+          </Button>
+          <Button
+            variant={mode === 'following' ? 'default' : 'outline'}
+            onClick={() => setMode('following')}
+          >
+            Following ({followingUsers.length})
+          </Button>
         </div>
 
-        {currentUser && (
-          <DiscoverCard
-            user={currentUser}
-            onLike={handleLike}
-            onPass={handlePass}
-            onShowInfo={setSelectedUser}
-          />
-        )}
+        {mode === 'discover' ? (
+          <>
+            {/* Preference Editor */}
+            <div className="mb-8">
+              <PreferenceEditor onSave={(newFilters) => setFilters(newFilters)} />
+            </div>
 
-        {/* Next page trigger */}
-        <div ref={nextPageRef} className="mt-8" />
+            {isLoading ? (
+              <Card>
+                <CardContent className="pt-12 pb-12 text-center">
+                  <p className="text-lg text-muted-foreground">Loading recommendations...</p>
+                </CardContent>
+              </Card>
+            ) : error ? (
+              <Card className="bg-destructive/10 border-destructive/20">
+                <CardContent className="pt-12 pb-12 text-center">
+                  <p className="text-lg text-destructive mb-4">Failed to load recommendations</p>
+                  <Button variant="outline" onClick={() => window.location.reload()}>
+                    Try Again
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : allUsers.length === 0 ? (
+              <Card>
+                <CardContent className="pt-12 pb-12 text-center">
+                  <p className="text-lg text-muted-foreground mb-4">
+                    No recommendations available at this time.
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Try adjusting your preferences or check back later!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <DiscoverCard
+                user={currentUser}
+                onLike={handleLike}
+                onPass={handlePass}
+                onShowInfo={setSelectedUser}
+              />
+            )}
 
-        {currentIndex >= allUsers.length - 3 && hasNextPage && (
-          <div className="mt-8 text-center">
-            <p className="text-muted-foreground mb-4">Loading more recommendations...</p>
-          </div>
+            {/* Next page trigger */}
+            {!isLoading && !error && <div ref={nextPageRef} className="mt-8" />}
+
+            {!isLoading && !error && currentIndex >= allUsers.length - 3 && hasNextPage && (
+              <div className="mt-8 text-center">
+                <p className="text-muted-foreground mb-4">Loading more recommendations...</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <Card>
+            <CardContent className="pt-6 pb-6 space-y-3">
+              {isLoadingFollowing ? (
+                <p className="text-center text-muted-foreground">Loading following list...</p>
+              ) : followingUsers.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-foreground font-semibold mb-2">You are not following anyone yet.</p>
+                  <p className="text-muted-foreground text-sm">Tap Love on Discover to follow users automatically.</p>
+                </div>
+              ) : (
+                followingUsers.map((user) => {
+                  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown User';
+
+                  return (
+                    <Link
+                      key={user.followId}
+                      href={`/dashboard/profile/${user.userId}`}
+                      className="block"
+                    >
+                      <div className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/40 transition">
+                        <div className="relative h-12 w-12 rounded-full overflow-hidden bg-muted flex items-center justify-center font-semibold">
+                          {user.profilePhotoUrl ? (
+                            <Image
+                              src={user.profilePhotoUrl}
+                              alt={fullName}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <span>{fullName.charAt(0).toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-foreground truncate">{fullName}</p>
+                          <p className="text-sm text-muted-foreground truncate">{user.location || 'Unknown location'}</p>
+                        </div>
+                        <span className="text-xs rounded-full bg-primary/10 text-primary px-2 py-1 capitalize">
+                          {user.status === 'matched' ? 'Matched' : 'Following'}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
         )}
       </div>
 
