@@ -44,9 +44,40 @@ export interface UserProfile {
   };
 }
 
-export interface RecommendedUser extends UserProfile {
+export interface RecommendedUser {
+  id: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bio?: string;
+  profilePhoto?: string;
+  profilePhotoUrl?: string;
+  location?: string | { latitude: number; longitude: number };
+  distance?: number;
+  age?: number;
+  photos?: Array<{
+    id: string;
+    url: string;
+    publicId: string;
+  }>;
+  interests?: Array<{
+    id: string;
+    name: string;
+  }>;
+  commonInterests?: string[];
+  preferences?: {
+    genderPreference: string[];
+    ageMin: number;
+    ageMax: number;
+    maxDistance: number;
+    lookingFor: string[];
+  };
+  displayName?: string;
+  avatar?: string;
+  lookingFor?: string[];
   compatibilityScore: number;
-  distance: number;
 }
 
 export interface Match {
@@ -81,6 +112,23 @@ const matchingQueryKeys = {
   matches: () => [...matchingQueryKeys.all, 'matches'] as const,
 };
 
+function normalizePaginatedResponse<T>(
+  response: PaginatedResponse<T> | T[],
+  page: number,
+  limit: number,
+): PaginatedResponse<T> {
+  if (Array.isArray(response)) {
+    return {
+      data: response,
+      page,
+      limit,
+      total: response.length,
+    };
+  }
+
+  return response;
+}
+
 /**
  * Infinite recommendations query (swipe cards)
  * Auto-loads next page when user scrolls
@@ -103,13 +151,21 @@ export function useInfiniteQueryRecommendations(
   return useInfiniteQuery({
     queryKey: [...matchingQueryKeys.recommendations(), filters],
     queryFn: async ({ pageParam = 1 }) => {
-      const url = `/matching/recommendations?page=${pageParam}&${queryString}`;
-      return apiGet<PaginatedResponse<RecommendedUser>>(url);
+      const baseParams = new URLSearchParams({ page: String(pageParam) });
+      const url = queryString
+        ? `/matching/recommendations?${baseParams.toString()}&${queryString}`
+        : `/matching/recommendations?${baseParams.toString()}`;
+      const response = await apiGet<PaginatedResponse<RecommendedUser> | RecommendedUser[]>(url);
+
+      return normalizePaginatedResponse(response, Number(pageParam), pageSize);
     },
-    getNextPageParam: (lastPage, pages) => {
-      const nextPage = pages.length + 1;
-      if (lastPage.data.length < pageSize) return undefined;
-      return nextPage;
+    getNextPageParam: (lastPage) => {
+      const loadedCount = lastPage.page * lastPage.limit;
+      if (loadedCount >= lastPage.total) {
+        return undefined;
+      }
+
+      return lastPage.page + 1;
     },
     initialPageParam: 1,
   });
@@ -132,11 +188,11 @@ export function useQueryMatches(page = 1, limit = 20) {
  * Like user mutation (optimistic update)
  * When both users like each other, they become a match (status='matched')
  */
-export function useMutationLikeUser(userId: string) {
+export function useMutationLikeUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => apiPost<void>(`/matching/${userId}/like`, {}),
+    mutationFn: (userId: string) => apiPost<void>(`/matching/${userId}/like`, {}),
     onSuccess: () => {
       // Invalidate recommendations and matches
       queryClient.invalidateQueries({
