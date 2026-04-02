@@ -352,6 +352,55 @@ export class MatchingService {
   }
 
   /**
+   * Get users the current user follows (liked users, including mutual matches)
+   */
+  async getFollowing(userId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+
+    const [followRows, total] = await this.matchRepository.findAndCount({
+      where: [
+        { userOneId: userId, userOneLiked: true },
+        { userTwoId: userId, userTwoLiked: true },
+      ],
+      relations: [
+        'userOne',
+        'userOne.profile',
+        'userOne.photos',
+        'userTwo',
+        'userTwo.profile',
+        'userTwo.photos',
+      ],
+      skip,
+      take: limit,
+      order: { updatedAt: 'DESC' },
+    });
+
+    const data = followRows.map((row) => {
+      const isCurrentUserOne = row.userOneId === userId;
+      const followedUser = isCurrentUserOne ? row.userTwo : row.userOne;
+
+      return {
+        followId: row.id,
+        userId: followedUser.id,
+        firstName: followedUser.profile?.firstName || followedUser.username,
+        lastName: followedUser.profile?.lastName || '',
+        bio: followedUser.profile?.bio || '',
+        location: followedUser.profile?.location || 'Unknown location',
+        profilePhotoUrl: followedUser.photos?.[0]?.photoUrl || null,
+        followedAt: row.updatedAt,
+        status: row.status,
+      };
+    });
+
+    return {
+      data,
+      page,
+      limit,
+      total,
+    };
+  }
+
+  /**
    * Block a user (prevents them from appearing in recommendations and messaging)
    */
   async blockUser(blockerId: string, blockedUserId: string) {
