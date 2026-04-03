@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Heart, MessageCircle, Video, Shield, Users } from 'lucide-react';
+import { Sparkles, MessageCircle, Video, Shield, Users } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -11,10 +12,15 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Heart className="h-5 w-5 text-accent-foreground" />
-              </div>
-              <span className="text-xl font-bold text-foreground">Connect</span>
+              <Image
+                src="/connectx-logo.png"
+                alt="ConnectX logo"
+                width={4000}
+                height={4000}
+                className="h-10 w-10 object-contain"
+                priority
+              />
+              <span className="text-xl font-bold text-foreground">ConnectX</span>
             </div>
             <div className="flex items-center gap-4">
               <Link href="/auth/login">
@@ -168,7 +174,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold text-foreground mb-4">Connect</h3>
+              <h3 className="font-semibold text-foreground mb-4">ConnectX</h3>
               <p className="text-sm text-muted-foreground">
                 A safe, inclusive platform for meaningful connections.
               </p>
@@ -193,7 +199,7 @@ export default function Home() {
             ))}
           </div>
           <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Connect. All rights reserved.</p>
+            <p>&copy; 2026 Connect. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a href="#" className="hover:text-foreground transition">Twitter</a>
               <a href="#" className="hover:text-foreground transition">Instagram</a>
