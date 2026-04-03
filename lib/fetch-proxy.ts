@@ -19,15 +19,19 @@ export async function apiClient(
 ): Promise<Response> {
   // Ensure we have the full URL
   const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+  const isFormDataBody =
+    typeof FormData !== 'undefined' && options.body instanceof FormData;
+
+  const headers = new Headers(options.headers || {});
+  if (!isFormDataBody && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   try {
     const response = await fetch(fullUrl, {
       ...options,
       credentials: 'include', // Auto-send httpOnly cookies with all requests
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
 
     // Handle error responses
