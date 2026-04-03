@@ -12,28 +12,16 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Connect - Modern Dating & Social Platform',
+  title: 'ConnectX - Modern Dating & Social Platform',
   description: 'A safe, inclusive platform for dating, hookups, relationships, and meaningful connections',
   generator: 'v0.app',
-  applicationName: 'Connect',
+  applicationName: 'ConnectX',
   keywords: ['dating', 'social', 'connections', 'matching', 'relationships'],
   authors: [{ name: 'Connect Team' }],
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/connectx-logo.png',
+    shortcut: '/connectx-logo.png',
+    apple: '/connectx-logo.png',
   },
 }
 
