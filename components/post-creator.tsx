@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Image, Send, X } from 'lucide-react';
 import { useMutationCreatePost } from '@/lib/api/posts';
+import { apiJson } from '@/lib/fetch-proxy';
 import { useToast } from '@/hooks/use-toast';
 
 interface PostCreatorProps {
@@ -13,15 +14,86 @@ interface PostCreatorProps {
 }
 
 export function PostCreator({ onPostCreated }: PostCreatorProps) {
+  const MAX_PHOTOS = 4;
+
   const [isOpen, setIsOpen] = useState(false);
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState('');
   const [isNsfw, setIsNsfw] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const createPostMutation = useMutationCreatePost();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAddPhotosClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const incomingFiles = Array.from(e.target.files || []);
+    if (incomingFiles.length === 0) {
+      return;
+    }
+
+    const imageFiles = incomingFiles.filter((file) => file.type.startsWith('image/'));
+    if (imageFiles.length !== incomingFiles.length) {
+      toast({
+        title: 'Some files were skipped',
+        description: 'Only image files are supported.',
+        variant: 'destructive',
+      });
+    }
+
+    const remainingSlots = Math.max(0, MAX_PHOTOS - selectedPhotos.length);
+    if (remainingSlots === 0) {
+      toast({
+        title: 'Photo limit reached',
+        description: `You can attach up to ${MAX_PHOTOS} photos per post.`,
+        variant: 'destructive',
+      });
+      e.target.value = '';
+      return;
+    }
+
+    const filesToAdd = imageFiles.slice(0, remainingSlots);
+    if (imageFiles.length > remainingSlots) {
+      toast({
+        title: 'Photo limit reached',
+        description: `Only ${remainingSlots} more photo${remainingSlots > 1 ? 's were' : ' was'} added.`,
+      });
+    }
+
+    setSelectedPhotos((prev) => [...prev, ...filesToAdd]);
+    e.target.value = '';
+  };
+
+  const handleRemoveSelectedPhoto = (indexToRemove: number) => {
+    setSelectedPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const uploadSelectedPhotos = async () => {
+    if (selectedPhotos.length === 0) {
+      return [] as string[];
+    }
+
+    const uploads = selectedPhotos.map(async (photo) => {
+      const formData = new FormData();
+      formData.append('file', photo);
+
+      const uploadResponse = await apiJson<{ url: string }>('/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      return uploadResponse.url;
+    });
+
+    return Promise.all(uploads);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const hashtagArray = hashtags
@@ -29,11 +101,30 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
       .filter((tag) => tag.trim().startsWith('#'))
       .map((tag) => tag.replace('#', ''));
 
+    let uploadedMediaUrls: string[] = [];
+
+    try {
+      setIsUploadingPhotos(true);
+      uploadedMediaUrls = await uploadSelectedPhotos();
+    } catch (error: any) {
+      setIsUploadingPhotos(false);
+      toast({
+        title: 'Failed to upload photos',
+        description: error?.message || 'Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsUploadingPhotos(false);
+
     createPostMutation.mutate(
       {
         caption,
         hashtags: hashtagArray,
         isNsfw,
+        visibility: 'public',
+        mediaUrls: uploadedMediaUrls,
       },
       {
         onSuccess: () => {
@@ -41,6 +132,7 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
           setCaption('');
           setHashtags('');
           setIsNsfw(false);
+          setSelectedPhotos([]);
           setIsOpen(false);
 
           // Notify parent
@@ -94,6 +186,15 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            onChange={handlePhotoSelection}
+            className="hidden"
+          />
+
           <div className="flex items-start gap-4">
             <div className="h-12 w-12 rounded-full bg-muted flex-shrink-0 flex items-center justify-center">👤</div>
             <div className="flex-1">
@@ -129,10 +230,42 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
             </label>
           </div>
 
+          {selectedPhotos.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm text-foreground">
+                Selected photos ({selectedPhotos.length}/{MAX_PHOTOS})
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {selectedPhotos.map((photo, index) => (
+                  <div
+                    key={`${photo.name}-${index}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1"
+                  >
+                    <span className="max-w-40 truncate text-xs text-foreground">{photo.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSelectedPhoto(index)}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={`Remove ${photo.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" className="border-border text-foreground" disabled={createPostMutation.isPending}>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-border text-foreground"
+              onClick={handleAddPhotosClick}
+              disabled={createPostMutation.isPending || isUploadingPhotos}
+            >
               <Image className="h-4 w-4 mr-2" />
-              Add Photos
+              {selectedPhotos.length > 0 ? `Add More Photos (${selectedPhotos.length})` : 'Add Photos'}
             </Button>
             <div className="flex-1" />
             <Button
@@ -140,17 +273,17 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
               variant="outline"
               className="border-border"
               onClick={() => setIsOpen(false)}
-              disabled={createPostMutation.isPending}
+              disabled={createPostMutation.isPending || isUploadingPhotos}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              disabled={createPostMutation.isPending || !caption.trim()}
+              disabled={createPostMutation.isPending || isUploadingPhotos || !caption.trim()}
             >
               <Send className="h-4 w-4 mr-2" />
-              {createPostMutation.isPending ? 'Posting...' : 'Post'}
+              {isUploadingPhotos ? 'Uploading photos...' : createPostMutation.isPending ? 'Posting...' : 'Post'}
             </Button>
           </div>
         </form>
