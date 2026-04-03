@@ -2,11 +2,23 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Sparkles, MessageCircle, Video, Shield, Users } from 'lucide-react';
+import { MessageCircle, Video, Shield, Users } from 'lucide-react';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <Image
+          src="/connectx-landing.png"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-20"
+          priority
+        />
+        <div className="absolute inset-0 bg-background/85" />
+      </div>
+
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
@@ -15,8 +27,8 @@ export default function Home() {
               <Image
                 src="/connectx-logo.png"
                 alt="ConnectX logo"
-                width={4000}
-                height={4000}
+                width={40}
+                height={40}
                 className="h-10 w-10 object-contain"
                 priority
               />
@@ -87,10 +99,13 @@ export default function Home() {
           <div className="relative hidden lg:block">
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 blur-3xl" />
             <div className="relative aspect-square rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-8 flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <Sparkles className="h-16 w-16 text-primary mx-auto opacity-50" />
-                <p className="text-muted-foreground">Safe, Verified, Connected</p>
-              </div>
+              <Image
+                src="/connectx-landing.png"
+                alt="ConnectX Dating and Social Platform"
+                width={1200}
+                height={900}
+                className="h-full w-full rounded-xl object-contain"
+              />
             </div>
           </div>
         </div>
