@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart } from 'lucide-react';
 import { useMutationSignup } from '@/lib/api/auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -47,9 +47,14 @@ export default function SignUp() {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <Heart className="h-6 w-6 text-accent-foreground" />
-          </div>
+          <Image
+            src="/connectx-logo.png"
+            alt="ConnectX logo"
+            width={48}
+            height={48}
+            className="h-12 w-12 object-contain"
+            priority
+          />
         </div>
 
         <Card className="border-border">
