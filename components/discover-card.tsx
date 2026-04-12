@@ -30,17 +30,15 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <Card className="h-96 overflow-hidden cursor-pointer" onClick={() => setIsFlipped(!isFlipped)}>
+      <Card
+        className="h-96 overflow-hidden cursor-pointer transition-bounce hover:shadow-warm-lg"
+        onClick={() => setIsFlipped(!isFlipped)}
+      >
         {!isFlipped ? (
           // Front: User Photo and Basic Info
-          <CardContent className="p-0 h-full relative bg-gradient-to-b from-transparent to-black/80">
+          <CardContent className="p-0 h-full relative bg-gradient-to-b from-transparent via-transparent to-black/90">
             {user.avatar ? (
-              <Image
-                src={user.avatar}
-                alt={user.displayName}
-                fill
-                className="object-cover"
-              />
+              <Image src={user.avatar} alt={user.displayName} fill className="object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-4xl font-bold text-white">
                 {user.displayName.charAt(0).toUpperCase()}
@@ -50,16 +48,16 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
             {/* Overlay with info */}
             <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
               <div className="mb-4">
-                <h2 className="text-3xl font-bold text-balance">
+                <h2 className="text-4xl font-black text-balance leading-tight">
                   {user.displayName}, {user.age}
                 </h2>
-                <p className="text-sm text-gray-200">{user.location}</p>
+                <p className="text-base text-gray-100 font-medium mt-2">{user.location}</p>
               </div>
 
-              {/* Compatibility score */}
-              <div className="bg-primary/80 backdrop-blur px-3 py-2 rounded-lg mb-4 w-fit">
-                <p className="text-xs font-semibold">
-                  {Math.round(user.compatibilityScore)}% Compatible
+              {/* Compatibility score with warm styling */}
+              <div className="bg-gradient-to-r from-warm-accent to-accent/80 backdrop-blur px-4 py-3 rounded-xl mb-4 w-fit shadow-lg shadow-warm/50">
+                <p className="text-sm font-bold">
+                  🔥 {Math.round(user.compatibilityScore)}% Compatible
                 </p>
               </div>
             </div>
@@ -67,22 +65,24 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
         ) : (
           // Back: Detailed Info
           <CardContent className="p-6 h-full overflow-y-auto">
-            <h3 className="text-xl font-bold mb-3">{user.displayName}</h3>
+            <h3 className="text-2xl font-bold mb-3">{user.displayName}</h3>
 
             {user.bio && (
-              <div className="mb-4">
-                <p className="text-sm text-muted-foreground">{user.bio}</p>
+              <div className="mb-5">
+                <p className="text-sm text-muted-foreground leading-relaxed">{user.bio}</p>
               </div>
             )}
 
             {user.lookingFor.length > 0 && (
-              <div className="mb-4">
-                <p className="text-xs font-semibold text-muted-foreground mb-2">LOOKING FOR</p>
+              <div className="mb-5">
+                <p className="text-xs font-bold text-warm-accent mb-3 uppercase tracking-wider">
+                  Looking For
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {user.lookingFor.map((type) => (
                     <span
                       key={type}
-                      className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium"
+                      className="px-3 py-1.5 bg-gradient-to-r from-warm-accent/15 to-accent/10 text-warm-accent text-xs rounded-full font-semibold border border-warm-accent/30"
                     >
                       {type}
                     </span>
@@ -93,12 +93,14 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
 
             {user.interests.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-muted-foreground mb-2">INTERESTS</p>
+                <p className="text-xs font-bold text-accent mb-3 uppercase tracking-wider">
+                  Interests
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {user.interests.slice(0, 6).map((interest) => (
                     <span
                       key={interest.id}
-                      className="px-2 py-1 bg-accent/10 text-accent text-xs rounded font-medium"
+                      className="px-2.5 py-1.5 bg-gradient-to-r from-accent/15 to-primary/10 text-accent text-xs rounded-lg font-semibold border border-accent/20"
                     >
                       {interest.name}
                     </span>
@@ -107,7 +109,7 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
               </div>
             )}
 
-            <p className="text-xs text-center text-muted-foreground mt-6">Click to flip back</p>
+            <p className="text-xs text-center text-muted-foreground/60 mt-6">Click to flip back</p>
           </CardContent>
         )}
       </Card>
@@ -117,7 +119,7 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
         <Button
           variant="outline"
           size="lg"
-          className="w-14 h-14 rounded-full p-0"
+          className="w-14 h-14 rounded-full p-0 hover:animate-spring-pop"
           onClick={(e) => {
             e.stopPropagation();
             onPass(user.id);
@@ -129,6 +131,7 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
         <Button
           variant="outline"
           size="lg"
+          className="hover:animate-spring-pop"
           onClick={(e) => {
             e.stopPropagation();
             onShowInfo(user);
@@ -139,7 +142,7 @@ export function DiscoverCard({ user, onLike, onPass, onShowInfo }: DiscoverCardP
 
         <Button
           size="lg"
-          className="w-14 h-14 rounded-full p-0 bg-accent hover:bg-accent/90"
+          className="w-14 h-14 rounded-full p-0 bg-gradient-to-br from-accent to-warm-accent hover:from-accent/90 hover:to-warm-accent/90 hover:animate-heart-pulse"
           onClick={(e) => {
             e.stopPropagation();
             onLike(user.id);
