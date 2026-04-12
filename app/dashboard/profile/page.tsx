@@ -35,6 +35,13 @@ export default function ProfilePage() {
         setIsLoading(true);
         setError(null);
         const profile = await fetchCurrentUserProfile();
+
+        if (!profile || !profile.id) {
+          // No profile returned, user might not be authenticated
+          router.push('/auth/login');
+          return;
+        }
+
         setUserProfile(profile);
         setFormData({
           username: profile.username || '',
@@ -48,10 +55,21 @@ export default function ProfilePage() {
         });
       } catch (err) {
         console.error('Failed to fetch profile:', err);
-        setError('Failed to load your profile. Please try again.');
+        const errorMsg = err instanceof Error ? err.message : 'Failed to load your profile';
+
+        // If 401, redirect to login
+        if (
+          err instanceof Error &&
+          (err.message.includes('401') || err.message.includes('Unauthorized'))
+        ) {
+          router.push('/auth/login');
+          return;
+        }
+
+        setError(errorMsg);
         toast({
           title: 'Error',
-          description: 'Failed to load profile data',
+          description: errorMsg,
           variant: 'destructive',
         });
       } finally {
@@ -60,7 +78,7 @@ export default function ProfilePage() {
     };
 
     fetchProfile();
-  }, [toast]);
+  }, [router, toast]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
