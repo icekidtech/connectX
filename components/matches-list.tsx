@@ -64,23 +64,15 @@ export function MatchesList({
           <div className="flex items-center justify-center py-12">
             <Loader className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
-        ) : matches.length === 0 ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <p className="text-muted-foreground mb-2">No matches yet</p>
-              <p className="text-sm text-muted-foreground">
-                Like profiles to create mutual matches
-              </p>
-            </div>
-          </div>
         ) : (
           <>
             {/* Matches Grid */}
             <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1 px-4">
-              {matches.map((match) => (
+              {matches.map((match, index) => (
                 <Card
                   key={match.id}
-                  className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                  className="overflow-hidden cursor-pointer hover:shadow-warm-lg hover:scale-105 transition-bounce hover:animate-card-hover"
+                  style={{ animation: `stagger-item 0.5s ease-out ${index * 50}ms both` }}
                   onClick={() => setSelectedMatch(match)}
                 >
                   <div className="relative w-full h-40 bg-muted">
@@ -100,25 +92,25 @@ export function MatchesList({
 
                     {match.user.compatibilityScore && (
                       <div className="absolute top-2 right-2">
-                        <Badge className="bg-green-500 text-white">
-                          {match.user.compatibilityScore}%
+                        <Badge className="bg-gradient-to-r from-warm-accent to-accent text-white font-bold shadow-md shadow-warm/40">
+                          🔥 {match.user.compatibilityScore}%
                         </Badge>
                       </div>
                     )}
                   </div>
 
                   <CardContent className="p-3">
-                    <p className="font-semibold text-sm">
+                    <p className="font-bold text-base text-warm-accent">
                       {match.user.firstName} {match.user.lastName}
                     </p>
                     {match.user.age && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground font-medium">
                         {match.user.age} years old
                       </p>
                     )}
                     {match.user.location && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {match.user.location}
+                      <p className="text-xs text-muted-foreground truncate font-medium">
+                        📍 {match.user.location}
                       </p>
                     )}
                   </CardContent>
@@ -128,7 +120,7 @@ export function MatchesList({
 
             {isFetchingMore && (
               <div className="flex justify-center py-4">
-                <Loader className="w-5 h-5 animate-spin text-muted-foreground" />
+                <Loader className="w-5 h-5 animate-spin text-warm-accent" />
               </div>
             )}
           </>
@@ -136,13 +128,10 @@ export function MatchesList({
 
         {/* Detail View */}
         {selectedMatch && (
-          <Dialog
-            open={!!selectedMatch}
-            onOpenChange={(open) => !open && setSelectedMatch(null)}
-          >
+          <Dialog open={!!selectedMatch} onOpenChange={(open) => !open && setSelectedMatch(null)}>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-warm-accent">
                   {selectedMatch.user.firstName} {selectedMatch.user.lastName}
                 </DialogTitle>
               </DialogHeader>
@@ -150,7 +139,7 @@ export function MatchesList({
               <div className="space-y-4">
                 {/* Profile Photo */}
                 {selectedMatch.user.profilePhoto && (
-                  <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden">
+                  <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden ring-2 ring-warm-accent/30">
                     <Image
                       src={selectedMatch.user.profilePhoto}
                       alt={`${selectedMatch.user.firstName} ${selectedMatch.user.lastName}`}
@@ -162,18 +151,16 @@ export function MatchesList({
 
                 {/* Info */}
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-base text-muted-foreground font-medium">
                     {selectedMatch.user.age && `${selectedMatch.user.age} years old`}
-                    {selectedMatch.user.age &&
-                      selectedMatch.user.location &&
-                      ' • '}
+                    {selectedMatch.user.age && selectedMatch.user.location && ' • '}
                     {selectedMatch.user.location && selectedMatch.user.location}
                   </p>
 
                   {selectedMatch.user.compatibilityScore && (
                     <div>
-                      <Badge className="bg-green-500 text-white">
-                        {selectedMatch.user.compatibilityScore}% match
+                      <Badge className="bg-gradient-to-r from-warm-accent to-accent text-white font-bold text-sm shadow-md shadow-warm/40">
+                        🔥 {selectedMatch.user.compatibilityScore}% match
                       </Badge>
                     </div>
                   )}
@@ -181,16 +168,13 @@ export function MatchesList({
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-4">
-                  <Link
-                    href={`/dashboard/profile/${selectedMatch.user.id}`}
-                    className="flex-1"
-                  >
-                    <Button variant="outline" className="w-full">
+                  <Link href={`/dashboard/profile/${selectedMatch.user.id}`} className="flex-1">
+                    <Button variant="outline" className="w-full hover:animate-spring-pop">
                       View Profile
                     </Button>
                   </Link>
                   <Button
-                    className="flex-1"
+                    className="flex-1 bg-gradient-to-r from-warm-accent to-accent hover:from-warm-accent/90 hover:to-accent/90 hover:animate-spring-pop"
                     onClick={() => {
                       onStartConversation(selectedMatch.user.id);
                       onOpenChange(false);
@@ -223,11 +207,11 @@ export function MatchesButton({
   return (
     <Button
       variant="outline"
-      className="h-12 px-4 justify-between"
+      className="h-12 px-4 justify-between border-warm-accent/30 hover:border-warm-accent hover:bg-warm-accent/10 hover:scale-105 transition-bounce"
       onClick={onClick}
     >
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+        <div className="w-8 h-8 bg-gradient-to-br from-warm-accent to-accent rounded-full flex items-center justify-center text-white font-bold text-sm animate-spring-bounce">
           ❤️
         </div>
         <div className="text-left">
