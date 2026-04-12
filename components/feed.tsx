@@ -10,14 +10,8 @@ import { Loader2 } from 'lucide-react';
 
 export function Feed() {
   const { user } = useAuth();
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-  } = useInfiniteQueryFeed(10);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
+    useInfiniteQueryFeed(10);
 
   const likeMutation = useMutationLikePost();
   const deleteMutation = useMutationDeletePost();
@@ -43,10 +37,10 @@ export function Feed() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading posts...</p>
+          <div className="animate-gradient rounded-full h-14 w-14 border-4 border-warm-accent/20 border-t-warm-accent mx-auto mb-4"></div>
+          <p className="text-muted-foreground font-medium">Loading posts...</p>
         </div>
       </div>
     );
@@ -54,9 +48,9 @@ export function Feed() {
 
   if (error) {
     return (
-      <Card className="border-border bg-destructive/10 border-destructive/20">
+      <Card className="border-destructive/20 bg-gradient-to-r from-destructive/10 to-destructive/5">
         <CardContent className="pt-6 pb-6">
-          <p className="text-destructive">Failed to load posts. Please try again.</p>
+          <p className="text-destructive font-semibold">Failed to load posts. Please try again.</p>
         </CardContent>
       </Card>
     );
@@ -66,8 +60,8 @@ export function Feed() {
   const posts = (data?.pages.flatMap((page) => page.data ?? []) || []).map((post) => {
     const likedFromRelations = Boolean(
       user?.id &&
-        Array.isArray(post.likes) &&
-        post.likes.some((like) => like?.userId === user.id || like?.user?.id === user.id),
+      Array.isArray(post.likes) &&
+      post.likes.some((like) => like?.userId === user.id || like?.user?.id === user.id)
     );
     const liked = Boolean(post.liked ?? post.isLiked ?? likedFromRelations);
 
@@ -80,10 +74,10 @@ export function Feed() {
 
   if (posts.length === 0) {
     return (
-      <Card className="border-border">
-        <CardContent className="pt-12 pb-12 text-center">
-          <p className="text-lg font-semibold text-foreground mb-2">No posts yet</p>
-          <p className="text-muted-foreground">
+      <Card className="border-warm-accent/20 bg-gradient-to-br from-card to-card/95">
+        <CardContent className="pt-16 pb-16 text-center">
+          <p className="text-xl font-bold text-warm-accent mb-2">No posts yet</p>
+          <p className="text-muted-foreground font-medium">
             Follow someone or create a post to get started!
           </p>
         </CardContent>
@@ -92,11 +86,12 @@ export function Feed() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {posts.map((post, index) => (
         <div
           key={post.id}
           ref={index === posts.length - 1 ? lastPostRef : undefined}
+          style={{ animation: `fade-in-up 0.5s ease-out ${index * 50}ms both` }}
         >
           <PostCard
             post={post}
@@ -109,8 +104,8 @@ export function Feed() {
 
       {/* Loading indicator for next page */}
       {isFetchingNextPage && (
-        <div className="flex justify-center py-6">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <div className="flex justify-center py-8">
+          <Loader2 className="w-7 h-7 animate-spin text-warm-accent" />
         </div>
       )}
     </div>
