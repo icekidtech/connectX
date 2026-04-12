@@ -1,22 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, MapPin, Heart, Loader2, AlertCircle } from 'lucide-react';
+import { Camera, MapPin, Heart, Loader2, AlertCircle, Upload } from 'lucide-react';
 import { fetchCurrentUserProfile, updateUserProfile, type UserProfile } from '@/lib/api/users';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     firstName: '',
@@ -87,6 +90,85 @@ export default function ProfilePage() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid file',
+        description: 'Please select an image file',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please select an image smaller than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsUploadingPhoto(true);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPhotoPreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to backend
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', file);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/users/profile/photo`, {
+        method: 'POST',
+        body: formDataToSend,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload photo');
+      }
+
+      const result = await response.json();
+      
+      // Update user profile with new photo
+      setUserProfile(prev => prev ? { ...prev, photos: [...(prev.photos || []), result] } : null);
+      
+      toast({
+        title: 'Success',
+        description: 'Profile photo uploaded successfully',
+      });
+    } catch (err) {
+      console.error('Failed to upload photo:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to upload photo';
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingPhoto(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -206,14 +288,44 @@ export default function ProfilePage() {
                 <CardTitle>Profile Photo</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center text-6xl mb-4">
-                  👤
+                <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center text-6xl mb-4 overflow-hidden">
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Photo preview" className="w-full h-full object-cover" />
+                  ) : userProfile?.photos?.[0]?.url ? (
+                    <img src={userProfile.photos[0].url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    '👤'
+                  )}
                 </div>
                 {isEditing && (
-                  <Button variant="outline" className="w-full border-border">
-                    <Camera className="h-4 w-4 mr-2" />
-                    Upload New Photo
-                  </Button>
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handlePhotoClick}
+                      disabled={isUploadingPhoto}
+                      variant="outline"
+                      className="w-full border-border"
+                    >
+                      {isUploadingPhoto ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload New Photo
+                        </>
+                      )}
+                    </Button>
+                  </>
                 )}
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-accent" />
