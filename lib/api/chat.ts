@@ -1,16 +1,11 @@
 /**
  * Chat API Service
- * 
+ *
  * Handles conversations and messages
  * WebSocket + REST hybrid for real-time messaging
  */
 
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/fetch-proxy';
 
 export interface Conversation {
@@ -51,10 +46,8 @@ export interface PaginatedResponse<T> {
 const chatQueryKeys = {
   all: ['chat'] as const,
   conversations: () => [...chatQueryKeys.all, 'conversations'] as const,
-  conversation: (id: string) =>
-    [...chatQueryKeys.all, 'conversation', id] as const,
-  messages: (conversationId: string) =>
-    [...chatQueryKeys.all, 'messages', conversationId] as const,
+  conversation: (id: string) => [...chatQueryKeys.all, 'conversation', id] as const,
+  messages: (conversationId: string) => [...chatQueryKeys.all, 'messages', conversationId] as const,
 };
 
 /**
@@ -66,7 +59,7 @@ export function useInfiniteQueryConversations(pageSize = 20) {
     queryKey: chatQueryKeys.conversations(),
     queryFn: async ({ pageParam = 1 }) => {
       return apiGet<PaginatedResponse<Conversation>>(
-        `/api/conversations?page=${pageParam}&limit=${pageSize}`
+        `/conversations?page=${pageParam}&limit=${pageSize}`
       );
     },
     getNextPageParam: (lastPage, pages) => {
@@ -84,7 +77,7 @@ export function useInfiniteQueryConversations(pageSize = 20) {
 export function useQueryConversation(conversationId: string) {
   return useQuery({
     queryKey: chatQueryKeys.conversation(conversationId),
-    queryFn: () => apiGet<Conversation>(`/api/conversations/${conversationId}`),
+    queryFn: () => apiGet<Conversation>(`/conversations/${conversationId}`),
   });
 }
 
@@ -92,15 +85,12 @@ export function useQueryConversation(conversationId: string) {
  * Infinite messages query (load older messages at top)
  * Messages load in reverse (oldest first for infinite scroll)
  */
-export function useInfiniteQueryConversationMessages(
-  conversationId: string,
-  pageSize = 50
-) {
+export function useInfiniteQueryConversationMessages(conversationId: string, pageSize = 50) {
   return useInfiniteQuery({
     queryKey: chatQueryKeys.messages(conversationId),
     queryFn: async ({ pageParam = 1 }) => {
       return apiGet<PaginatedResponse<Message>>(
-        `/api/conversations/${conversationId}/messages?page=${pageParam}&limit=${pageSize}`
+        `/conversations/${conversationId}/messages?page=${pageParam}&limit=${pageSize}`
       );
     },
     getNextPageParam: (lastPage, pages) => {
@@ -119,8 +109,7 @@ export function useMutationCreateConversation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userId: string) =>
-      apiPost<Conversation>('/conversations', { userId }),
+    mutationFn: (userId: string) => apiPost<Conversation>('/conversations', { userId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatQueryKeys.conversations() });
     },
@@ -145,9 +134,9 @@ export function useMutationSendMessage(conversationId: string) {
         queryKey: chatQueryKeys.messages(conversationId),
       });
 
-      const previousData = queryClient.getInfiniteQueryData<
-        { pages: PaginatedResponse<Message>[] }
-      >(chatQueryKeys.messages(conversationId));
+      const previousData = queryClient.getInfiniteQueryData<{
+        pages: PaginatedResponse<Message>[];
+      }>(chatQueryKeys.messages(conversationId));
 
       if (previousData) {
         // Create optimistic message
@@ -175,10 +164,7 @@ export function useMutationSendMessage(conversationId: string) {
           }),
         };
 
-        queryClient.setInfiniteQueryData(
-          chatQueryKeys.messages(conversationId),
-          newData
-        );
+        queryClient.setInfiniteQueryData(chatQueryKeys.messages(conversationId), newData);
       }
 
       return { previousData };
@@ -210,8 +196,7 @@ export function useMutationMarkConversationRead(conversationId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () =>
-      apiPost<void>(`/conversations/${conversationId}/mark-read`, {}),
+    mutationFn: () => apiPost<void>(`/conversations/${conversationId}/mark-read`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: chatQueryKeys.messages(conversationId),
@@ -231,8 +216,7 @@ export function useMutationArchiveConversation(conversationId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () =>
-      apiPost<void>(`/conversations/${conversationId}/archive`, {}),
+    mutationFn: () => apiPost<void>(`/conversations/${conversationId}/archive`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatQueryKeys.conversations() });
     },
