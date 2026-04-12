@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
+    username: '',
     firstName: '',
     lastName: '',
     age: '',
@@ -36,6 +37,7 @@ export default function ProfilePage() {
         const profile = await fetchCurrentUserProfile();
         setUserProfile(profile);
         setFormData({
+          username: profile.username || '',
           firstName: profile.firstName || '',
           lastName: profile.lastName || '',
           age: profile.age?.toString() || '',
@@ -211,6 +213,18 @@ export default function ProfilePage() {
               <CardContent>
                 {isEditing ? (
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Username</label>
+                      <Input
+                        name="username"
+                        value={formData.username}
+                        disabled
+                        className="bg-muted border-border cursor-not-allowed opacity-60"
+                        title="Username cannot be changed"
+                      />
+                      <p className="text-xs text-muted-foreground">Username cannot be changed</p>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">First Name</label>
@@ -288,6 +302,11 @@ export default function ProfilePage() {
                   </form>
                 ) : (
                   <div className="space-y-4">
+                    <div className="border-b border-border pb-4">
+                      <p className="text-sm text-muted-foreground mb-1">Username</p>
+                      <p className="font-semibold text-foreground">@{formData.username}</p>
+                    </div>
+
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">Name</p>
