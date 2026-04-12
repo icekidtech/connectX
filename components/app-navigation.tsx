@@ -3,17 +3,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { 
-  Heart, 
-  MessageCircle, 
-  Video, 
-  Users, 
+import {
+  Heart,
+  MessageCircle,
+  Video,
+  Users,
   User,
-  Settings, 
-  CheckCircle, 
-  Bell, 
+  Settings,
+  CheckCircle,
+  Bell,
   Shield,
-  LogOut 
+  LogOut,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -46,7 +46,7 @@ export function AppNavigation({ variant = 'header', className = '' }: AppNavigat
 
   const isActive = (href: string) => pathname.startsWith(href);
 
-  const visibleItems = navigationItems.filter(item => !item.admin);
+  const visibleItems = navigationItems.filter((item) => !item.admin);
 
   if (variant === 'header') {
     return (
@@ -56,7 +56,11 @@ export function AppNavigation({ variant = 'header', className = '' }: AppNavigat
             <Button
               variant={isActive(item.href) ? 'default' : 'ghost'}
               size="sm"
-              className={isActive(item.href) ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-primary/10'}
+              className={
+                isActive(item.href)
+                  ? 'bg-gradient-to-r from-warm-accent to-accent text-white font-semibold'
+                  : 'text-foreground hover:bg-warm-accent/10 hover:text-warm-accent'
+              }
             >
               <item.icon className="h-4 w-4 mr-2" />
               {item.label}
@@ -69,21 +73,21 @@ export function AppNavigation({ variant = 'header', className = '' }: AppNavigat
 
   if (variant === 'sidebar') {
     return (
-      <nav className={`space-y-2 ${className}`}>
+      <nav className={`space-y-1 ${className}`}>
         {visibleItems.map((item) => (
           <Link key={item.label} href={item.href}>
             <Button
               variant={isActive(item.href) ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
+              className={`w-full justify-start transition-bounce ${
                 isActive(item.href)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-foreground hover:bg-primary/10 hover:text-primary'
+                  ? 'bg-gradient-to-r from-warm-accent/90 to-accent/80 text-white font-bold shadow-md shadow-warm/40'
+                  : 'text-foreground hover:bg-warm-accent/15 hover:text-warm-accent'
               }`}
             >
               <item.icon className="h-4 w-4 mr-2" />
               {item.label}
               {item.badge && (
-                <span className="ml-auto inline-flex items-center justify-center rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
+                <span className="ml-auto inline-flex items-center justify-center rounded-full bg-gradient-to-r from-accent to-warm-accent px-2 py-1 text-xs font-bold text-white shadow-md shadow-warm/30">
                   {item.badge}
                 </span>
               )}
@@ -96,30 +100,26 @@ export function AppNavigation({ variant = 'header', className = '' }: AppNavigat
 
   if (variant === 'mobile') {
     return (
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-warm-accent/20 bg-card lg:hidden">
         <div className="flex items-center justify-around">
           {/* Show only main items on mobile bottom nav */}
           {[visibleItems[0], visibleItems[1], visibleItems[2], visibleItems[3]].map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="flex-1 relative"
-            >
+            <Link key={item.label} href={item.href} className="flex-1 relative">
               <Button
                 variant={isActive(item.href) ? 'default' : 'ghost'}
-                className={`w-full rounded-none justify-center py-6 ${
+                className={`w-full rounded-none justify-center py-6 transition-bounce ${
                   isActive(item.href)
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground hover:bg-primary/10'
+                    ? 'bg-gradient-to-b from-warm-accent/20 to-accent/10 text-warm-accent font-bold border-t-2 border-warm-accent'
+                    : 'text-foreground hover:bg-warm-accent/10'
                 }`}
               >
                 <div className="flex flex-col items-center gap-1">
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-xs">{item.label}</span>
+                  <item.icon className={`h-5 w-5 ${isActive(item.href) ? 'scale-110' : ''}`} />
+                  <span className="text-xs font-semibold">{item.label}</span>
                 </div>
               </Button>
               {item.badge && (
-                <span className="absolute top-1 right-1 inline-flex items-center justify-center rounded-full bg-red-500 h-5 w-5 text-xs font-bold text-white">
+                <span className="absolute top-1 right-1 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-accent to-warm-accent h-5 w-5 text-xs font-bold text-white shadow-md shadow-warm/40 animate-spring-bounce">
                   {item.badge}
                 </span>
               )}
