@@ -1,16 +1,11 @@
 /**
  * Posts API Service
- * 
+ *
  * Handles posts and comments queries/mutations
  * Uses React Query for infinite scroll (Instagram-style feed)
  */
 
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { InfiniteData } from '@tanstack/react-query';
 import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/fetch-proxy';
 
@@ -110,7 +105,7 @@ const postsQueryKeys = {
 function normalizePaginatedResponse<T>(
   response: PaginatedResponse<T> | T[],
   page: number,
-  limit: number,
+  limit: number
 ): PaginatedResponse<T> {
   if (Array.isArray(response)) {
     return {
@@ -168,7 +163,7 @@ export function useInfiniteQueryFeed(pageSize = 10) {
 export function useQueryPost(postId: string) {
   return useQuery({
     queryKey: postsQueryKeys.post(postId),
-    queryFn: () => apiGet<Post>(`/api/posts/${postId}`),
+    queryFn: () => apiGet<Post>(`/posts/${postId}`),
   });
 }
 
@@ -179,9 +174,9 @@ export function useQueryPostLikes(postId: string, page = 1, limit = 10) {
   return useQuery({
     queryKey: postsQueryKeys.likes(postId),
     queryFn: async () => {
-      const response = await apiGet<PaginatedResponse<{ id: string; email: string }> | { id: string; email: string }[]>(
-        `/posts/${postId}/likes?page=${page}&limit=${limit}`
-      );
+      const response = await apiGet<
+        PaginatedResponse<{ id: string; email: string }> | { id: string; email: string }[]
+      >(`/posts/${postId}/likes?page=${page}&limit=${limit}`);
 
       return normalizePaginatedResponse(response, page, limit);
     },
@@ -191,12 +186,7 @@ export function useQueryPostLikes(postId: string, page = 1, limit = 10) {
 /**
  * Comments query
  */
-export function useQueryComments(
-  postId: string,
-  page = 1,
-  limit = 10,
-  enabled = true,
-) {
+export function useQueryComments(postId: string, page = 1, limit = 10, enabled = true) {
   return useQuery({
     queryKey: postsQueryKeys.comments(postId),
     queryFn: async () => {
@@ -248,8 +238,7 @@ export function useMutationUpdatePost(postId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdatePostDto) =>
-      apiPut<Post>(`/posts/${postId}`, data),
+    mutationFn: (data: UpdatePostDto) => apiPut<Post>(`/posts/${postId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.post(postId) });
       queryClient.invalidateQueries({ queryKey: postsQueryKeys.feed() });
@@ -287,7 +276,7 @@ export function useMutationLikePost() {
 
       const previousPost = queryClient.getQueryData<Post>(postsQueryKeys.post(postId));
       const previousFeed = queryClient.getQueryData<InfiniteData<PaginatedResponse<Post>>>(
-        postsQueryKeys.feed(),
+        postsQueryKeys.feed()
       );
 
       if (previousPost) {
@@ -295,28 +284,20 @@ export function useMutationLikePost() {
       }
 
       if (previousFeed) {
-        queryClient.setQueryData<InfiniteData<PaginatedResponse<Post>>>(
-          postsQueryKeys.feed(),
-          {
-            ...previousFeed,
-            pages: previousFeed.pages.map((page) => ({
-              ...page,
-              data: page.data.map((post) =>
-                post.id === postId ? togglePostLikeState(post) : post,
-              ),
-            })),
-          },
-        );
+        queryClient.setQueryData<InfiniteData<PaginatedResponse<Post>>>(postsQueryKeys.feed(), {
+          ...previousFeed,
+          pages: previousFeed.pages.map((page) => ({
+            ...page,
+            data: page.data.map((post) => (post.id === postId ? togglePostLikeState(post) : post)),
+          })),
+        });
       }
 
       return { previousPost, previousFeed, postId };
     },
     onError: (_err, _postId, context) => {
       if (context?.previousPost) {
-        queryClient.setQueryData(
-          postsQueryKeys.post(context.postId),
-          context.previousPost,
-        );
+        queryClient.setQueryData(postsQueryKeys.post(context.postId), context.previousPost);
       }
 
       if (context?.previousFeed) {
@@ -337,12 +318,10 @@ export function useMutationLikePost() {
             ...current,
             pages: current.pages.map((page) => ({
               ...page,
-              data: page.data.map((item) =>
-                item.id === post.id ? { ...item, ...post } : item,
-              ),
+              data: page.data.map((item) => (item.id === post.id ? { ...item, ...post } : item)),
             })),
           };
-        },
+        }
       );
     },
     onSettled: (_data, _error, postId) => {
@@ -377,12 +356,10 @@ export function useMutationUpdateComment(commentId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { content: string }) =>
-      apiPut<Comment>(`/posts/comment/${commentId}`, data),
+    mutationFn: (data: { content: string }) => apiPut<Comment>(`/posts/comment/${commentId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
+        predicate: (query) => query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
       });
     },
   });
@@ -398,8 +375,7 @@ export function useMutationDeleteComment(commentId: string) {
     mutationFn: () => apiDelete<void>(`/posts/comment/${commentId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
+        predicate: (query) => query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
       });
     },
   });
@@ -416,8 +392,7 @@ export function useMutationLikeComment(commentId: string) {
     onMutate: async () => {
       // Optimistic update - need to handle multiple comment queries
       await queryClient.cancelQueries({
-        predicate: (query) =>
-          query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
+        predicate: (query) => query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
       });
 
       // For now, just refetch on success
@@ -425,8 +400,7 @@ export function useMutationLikeComment(commentId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
+        predicate: (query) => query.queryKey[0] === 'posts' && query.queryKey[1] === 'comments',
       });
     },
   });
