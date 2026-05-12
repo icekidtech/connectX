@@ -22,6 +22,12 @@ import { PostComment } from '../../modules/posts/entities/post-comment.entity';
 import { Message } from '../../modules/chat/entities/message.entity';
 import { Conversation } from '../../modules/chat/entities/conversation.entity';
 import { MessageRead } from '../../modules/chat/entities/message-read.entity';
+import { Match } from '../../modules/matching/entities/match.entity';
+import { Stream } from '../../modules/streams/entities/stream.entity';
+import { StreamViewer } from '../../modules/streams/entities/stream-viewer.entity';
+import { Report } from '../../modules/moderation/entities/report.entity';
+import { UserVerification } from '../../modules/moderation/entities/user-verification.entity';
+import { Notification } from '../../modules/notifications/entities/notification.entity';
 
 // ─── Data Source ─────────────────────────────────────────────────────────────
 const AppDataSource = new DataSource({
@@ -47,6 +53,12 @@ const AppDataSource = new DataSource({
     Message,
     Conversation,
     MessageRead,
+    Match,
+    Stream,
+    StreamViewer,
+    Report,
+    UserVerification,
+    Notification,
   ],
 });
 
