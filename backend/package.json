@@ -25,6 +25,9 @@
     "migration:revert": "pnpm run typeorm migration:revert -d dist/database/data-source.js",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@nestjs/core", "@scarf/scarf", "bcrypt"]
+  },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.4",
