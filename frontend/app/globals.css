@@ -1,0 +1,398 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Modern Dating Platform Color System - Warm Playful Edition */
+  /* Primary: Sophisticated teal/cyan for trust and connection */
+  --background: oklch(0.98 0.001 0);
+  --foreground: oklch(0.15 0.02 0);
+  --card: oklch(0.995 0.002 60);
+  --card-foreground: oklch(0.12 0.01 0);
+  --popover: oklch(0.98 0.001 0);
+  --popover-foreground: oklch(0.15 0.02 0);
+
+  /* Primary: Deep teal for CTAs and headers */
+  --primary: oklch(0.35 0.15 210);
+  --primary-foreground: oklch(0.98 0.001 0);
+
+  /* Secondary: Warm rose/pink for highlights and engagement */
+  --secondary: oklch(0.65 0.25 12);
+  --secondary-foreground: oklch(1 0 0);
+
+  --muted: oklch(0.91 0.015 35);
+  --muted-foreground: oklch(0.55 0.05 0);
+
+  /* Accent: Vibrant coral for CTAs, matches design energy */
+  --accent: oklch(0.62 0.28 24);
+  --accent-foreground: oklch(0.98 0.001 0);
+
+  --destructive: oklch(0.58 0.25 27);
+  --destructive-foreground: oklch(0.98 0.001 0);
+
+  --border: oklch(0.91 0.015 35);
+  --input: oklch(0.96 0.015 40);
+  --ring: oklch(0.55 0.12 210);
+
+  /* Warm shadow and depth layers */
+  --shadow-warm: oklch(0.2 0.04 25 / 0.12);
+  --shadow-warm-lg: oklch(0.1 0.05 30 / 0.16);
+
+  /* Warm accent colors for engagement and feedback */
+  --warm-accent: oklch(0.68 0.22 15);
+  --warm-accent-light: oklch(0.75 0.18 25);
+  --success: oklch(0.7 0.18 120);
+
+  /* Chart colors for matching compatibility visualization */
+  --chart-1: oklch(0.62 0.28 24);
+  --chart-2: oklch(0.35 0.15 210);
+  --chart-3: oklch(0.7 0.18 120);
+  --chart-4: oklch(0.55 0.2 350);
+  --chart-5: oklch(0.65 0.15 280);
+
+  --radius: 0.75rem;
+  --sidebar: oklch(0.98 0.001 0);
+  --sidebar-foreground: oklch(0.15 0.02 0);
+  --sidebar-primary: oklch(0.35 0.15 210);
+  --sidebar-primary-foreground: oklch(0.98 0.001 0);
+  --sidebar-accent: oklch(0.62 0.28 24);
+  --sidebar-accent-foreground: oklch(0.98 0.001 0);
+  --sidebar-border: oklch(0.91 0.015 35);
+  --sidebar-ring: oklch(0.55 0.12 210);
+}
+
+.dark {
+  /* Dark mode: Sophisticated dark grays with teal and coral accents + warm touches */
+  --background: oklch(0.12 0.015 240);
+  --foreground: oklch(0.95 0.01 0);
+  --card: oklch(0.17 0.02 245);
+  --card-foreground: oklch(0.93 0.01 0);
+  --popover: oklch(0.14 0.015 240);
+  --popover-foreground: oklch(0.95 0.01 0);
+
+  /* Primary: Bright teal for light mode contrast */
+  --primary: oklch(0.68 0.18 200);
+  --primary-foreground: oklch(0.12 0.015 240);
+
+  /* Secondary: Rose for dark mode */
+  --secondary: oklch(0.48 0.22 8);
+  --secondary-foreground: oklch(0.95 0.01 0);
+
+  --muted: oklch(0.28 0.02 50);
+  --muted-foreground: oklch(0.7 0.05 0);
+
+  /* Accent: Bright coral for dark mode */
+  --accent: oklch(0.72 0.26 20);
+  --accent-foreground: oklch(0.12 0.015 240);
+
+  --destructive: oklch(0.55 0.24 28);
+  --destructive-foreground: oklch(0.95 0.01 0);
+
+  --border: oklch(0.22 0.025 50);
+  --input: oklch(0.2 0.025 50);
+  --ring: oklch(0.68 0.18 200);
+
+  /* Warm shadows for dark mode */
+  --shadow-warm: oklch(0.05 0.03 25 / 0.25);
+  --shadow-warm-lg: oklch(0 0 0 / 0.35);
+
+  /* Warm accent colors */
+  --warm-accent: oklch(0.75 0.2 15);
+  --warm-accent-light: oklch(0.8 0.16 25);
+  --success: oklch(0.65 0.18 130);
+
+  /* Chart colors for dark mode */
+  --chart-1: oklch(0.72 0.26 20);
+  --chart-2: oklch(0.68 0.18 200);
+  --chart-3: oklch(0.65 0.18 130);
+  --chart-4: oklch(0.7 0.2 355);
+  --chart-5: oklch(0.75 0.16 280);
+
+  --sidebar: oklch(0.14 0.015 240);
+  --sidebar-foreground: oklch(0.95 0.01 0);
+  --sidebar-primary: oklch(0.68 0.18 200);
+  --sidebar-primary-foreground: oklch(0.12 0.015 240);
+  --sidebar-accent: oklch(0.72 0.26 20);
+  --sidebar-accent-foreground: oklch(0.12 0.015 240);
+  --sidebar-border: oklch(0.22 0.025 50);
+  --sidebar-ring: oklch(0.68 0.18 200);
+}
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-warm-accent: var(--warm-accent);
+  --color-warm-accent-light: var(--warm-accent-light);
+  --color-success: var(--success);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Spring Physics Animations */
+@keyframes spring-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes spring-scale {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes spring-pop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes button-lift {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes card-hover {
+  0% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.01);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+}
+
+@keyframes gradient-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stagger-item {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes heart-pulse {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.15);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes success-check {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Utility Classes for Animations */
+@layer utilities {
+  .animate-spring-bounce {
+    animation: spring-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-spring-scale {
+    animation: spring-scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-spring-pop {
+    animation: spring-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-button-lift {
+    animation: button-lift 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-card-hover {
+    animation: card-hover 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-gradient {
+    animation: gradient-rotate 3s ease infinite;
+    background-size: 200% 200%;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s ease-out;
+  }
+
+  .animate-stagger-item {
+    animation: stagger-item 0.5s ease-out;
+  }
+
+  .animate-heart-pulse {
+    animation: heart-pulse 0.6s ease-in-out;
+  }
+
+  .animate-success-check {
+    animation: success-check 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Transition utilities */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-bounce {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Gradient utilities */
+  .gradient-warm-card {
+    @apply bg-gradient-to-br from-card via-card to-card/95;
+  }
+
+  .gradient-warm-light {
+    @apply bg-gradient-to-r from-warm-accent/10 to-accent/5;
+  }
+
+  .gradient-engagement {
+    @apply bg-gradient-to-r from-secondary to-accent;
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-lift:hover {
+    box-shadow:
+      0 10px 15px -3px var(--shadow-warm),
+      0 4px 6px -4px var(--shadow-warm-lg);
+  }
+
+  /* Respect prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-spring-bounce,
+    .animate-spring-scale,
+    .animate-spring-pop,
+    .animate-button-lift,
+    .animate-card-hover,
+    .animate-gradient,
+    .animate-fade-in-up,
+    .animate-stagger-item,
+    .animate-heart-pulse,
+    .animate-success-check,
+    .transition-smooth,
+    .transition-bounce {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
