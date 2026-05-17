@@ -36,12 +36,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   render() {
     if (this.state.hasError && this.state.error) {
+      if (this.props.fallback) {
+        return this.props.fallback(this.state.error, () => {
+          this.setState({ hasError: false, error: null });
+        });
+      }
       return (
-        <this.props.fallback ? (
-          this.props.fallback(this.state.error, () => {
-            this.setState({ hasError: false, error: null });
-          })
-        ) : (
           <div className="w-full h-screen flex items-center justify-center bg-background p-4">
             <Card className="w-full max-w-md">
               <CardHeader>
@@ -79,7 +79,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             </Card>
           </div>
         )
-      );
     }
 
     return this.props.children;
