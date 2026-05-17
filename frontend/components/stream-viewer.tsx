@@ -148,11 +148,7 @@ export function StreamViewer({
                     className="bg-black/50 hover:bg-black/70 text-white"
                     onClick={() => setIsMuted(!isMuted)}
                   >
-                    {isMuted ? (
-                      <VolumeX className="w-4 h-4" />
-                    ) : (
-                      <Volume2 className="w-4 h-4" />
-                    )}
+                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   </Button>
                   <Button
                     size="icon"
@@ -281,11 +277,7 @@ export function StreamViewer({
                       onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                       className="text-sm"
                     />
-                    <Button
-                      size="icon"
-                      onClick={handleAddComment}
-                      disabled={!newComment.trim()}
-                    >
+                    <Button size="icon" onClick={handleAddComment} disabled={!newComment.trim()}>
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>

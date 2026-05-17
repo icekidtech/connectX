@@ -43,9 +43,7 @@ export function PhotoVerificationFlow() {
             <div className="flex items-center gap-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                  currentStep !== 'intro'
-                    ? 'bg-green-500 text-white'
-                    : 'bg-accent text-white'
+                  currentStep !== 'intro' ? 'bg-green-500 text-white' : 'bg-accent text-white'
                 }`}
               >
                 ✓
@@ -79,7 +77,9 @@ export function PhotoVerificationFlow() {
 
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                photoVerified && idVerified ? 'bg-green-500 text-white' : 'bg-border text-muted-foreground'
+                photoVerified && idVerified
+                  ? 'bg-green-500 text-white'
+                  : 'bg-border text-muted-foreground'
               }`}
             >
               ✓
@@ -98,9 +98,7 @@ export function PhotoVerificationFlow() {
                     <Eye className="w-5 h-5 text-blue-500" />
                   </div>
                   <CardTitle className="text-lg">Photo Verification</CardTitle>
-                  <CardDescription>
-                    Verify with a clear selfie photo
-                  </CardDescription>
+                  <CardDescription>Verify with a clear selfie photo</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2 text-sm text-muted-foreground">
@@ -126,9 +124,7 @@ export function PhotoVerificationFlow() {
                     <FileText className="w-5 h-5 text-purple-500" />
                   </div>
                   <CardTitle className="text-lg">ID Verification</CardTitle>
-                  <CardDescription>
-                    Verify with a government-issued ID
-                  </CardDescription>
+                  <CardDescription>Verify with a government-issued ID</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2 text-sm text-muted-foreground">
@@ -173,9 +169,7 @@ export function PhotoVerificationFlow() {
             <Card className="border-border">
               <CardHeader>
                 <CardTitle>Selfie Photo Verification</CardTitle>
-                <CardDescription>
-                  Take a clear selfie photo for verification
-                </CardDescription>
+                <CardDescription>Take a clear selfie photo for verification</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Camera Preview */}
@@ -229,9 +223,7 @@ export function PhotoVerificationFlow() {
             <Card className="border-border">
               <CardHeader>
                 <CardTitle>Government ID Verification</CardTitle>
-                <CardDescription>
-                  Upload photos of your government-issued ID
-                </CardDescription>
+                <CardDescription>Upload photos of your government-issued ID</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* ID Upload Areas */}
@@ -331,9 +323,9 @@ export function PhotoVerificationFlow() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>What happens next?</AlertTitle>
               <AlertDescription>
-                After submission, our verification team will review your documents. You'll
-                receive an email notification once verification is complete. This typically takes
-                24-48 hours.
+                After submission, our verification team will review your documents. You'll receive
+                an email notification once verification is complete. This typically takes 24-48
+                hours.
               </AlertDescription>
             </Alert>
 
@@ -354,8 +346,8 @@ export function PhotoVerificationFlow() {
               </div>
               <h2 className="text-2xl font-bold mb-2">Verification Submitted</h2>
               <p className="text-muted-foreground mb-6">
-                Thank you for submitting your verification. Our team will review your documents
-                and you'll receive an email notification within 24-48 hours.
+                Thank you for submitting your verification. Our team will review your documents and
+                you'll receive an email notification within 24-48 hours.
               </p>
             </div>
 

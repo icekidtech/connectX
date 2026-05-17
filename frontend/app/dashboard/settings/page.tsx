@@ -64,9 +64,7 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account, privacy, and preferences
-          </p>
+          <p className="text-muted-foreground">Manage your account, privacy, and preferences</p>
         </div>
 
         {/* Settings Tabs */}
@@ -95,9 +93,7 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Email Notifications</CardTitle>
-                <CardDescription>
-                  Choose which notifications you want to receive
-                </CardDescription>
+                <CardDescription>Choose which notifications you want to receive</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Matches */}
@@ -197,18 +193,27 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Profile Visibility</CardTitle>
-                <CardDescription>
-                  Control who can see your profile
-                </CardDescription>
+                <CardDescription>Control who can see your profile</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   {[
                     { id: 'public', label: 'Public', description: 'Anyone can view your profile' },
-                    { id: 'friends-only', label: 'Matches Only', description: 'Only people you\'ve matched with' },
-                    { id: 'private', label: 'Private', description: 'Only you can see your profile' },
+                    {
+                      id: 'friends-only',
+                      label: 'Matches Only',
+                      description: "Only people you've matched with",
+                    },
+                    {
+                      id: 'private',
+                      label: 'Private',
+                      description: 'Only you can see your profile',
+                    },
                   ].map((option) => (
-                    <label key={option.id} className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/5">
+                    <label
+                      key={option.id}
+                      className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/5"
+                    >
                       <input
                         type="radio"
                         name="visibility"
@@ -235,9 +240,7 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Online Status</CardTitle>
-                <CardDescription>
-                  Control your online status visibility
-                </CardDescription>
+                <CardDescription>Control your online status visibility</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
@@ -263,17 +266,26 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Message Requests</CardTitle>
-                <CardDescription>
-                  Who can send you direct messages
-                </CardDescription>
+                <CardDescription>Who can send you direct messages</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
                   { id: 'everyone', label: 'Everyone', description: 'Anyone can message you' },
-                  { id: 'verified', label: 'Verified Users Only', description: 'Only verified users' },
-                  { id: 'matches-only', label: 'Matches Only', description: 'Only people you\'ve matched with' },
+                  {
+                    id: 'verified',
+                    label: 'Verified Users Only',
+                    description: 'Only verified users',
+                  },
+                  {
+                    id: 'matches-only',
+                    label: 'Matches Only',
+                    description: "Only people you've matched with",
+                  },
                 ].map((option) => (
-                  <label key={option.id} className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/5">
+                  <label
+                    key={option.id}
+                    className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/5"
+                  >
                     <input
                       type="radio"
                       name="messages"
@@ -316,17 +328,13 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Two-Factor Authentication</CardTitle>
-                <CardDescription>
-                  Add an extra layer of security to your account
-                </CardDescription>
+                <CardDescription>Add an extra layer of security to your account</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">2FA Status</p>
-                    <p className="text-sm text-muted-foreground">
-                      Currently disabled
-                    </p>
+                    <p className="text-sm text-muted-foreground">Currently disabled</p>
                   </div>
                   <Badge variant="outline">Disabled</Badge>
                 </div>
@@ -340,8 +348,16 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { device: 'Chrome on Mac', time: 'Today at 10:30 AM', location: 'San Francisco, CA' },
-                  { device: 'Mobile Safari on iPhone', time: 'Yesterday at 8:45 PM', location: 'San Francisco, CA' },
+                  {
+                    device: 'Chrome on Mac',
+                    time: 'Today at 10:30 AM',
+                    location: 'San Francisco, CA',
+                  },
+                  {
+                    device: 'Mobile Safari on iPhone',
+                    time: 'Yesterday at 8:45 PM',
+                    location: 'San Francisco, CA',
+                  },
                   { device: 'Chrome on Windows', time: '2 days ago', location: 'Oakland, CA' },
                 ].map((login, idx) => (
                   <div key={idx} className="p-3 border border-border rounded-lg">
@@ -360,9 +376,7 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Download Your Data</CardTitle>
-                <CardDescription>
-                  Get a copy of all your personal data
-                </CardDescription>
+                <CardDescription>Get a copy of all your personal data</CardDescription>
               </CardHeader>
               <CardContent>
                 <Alert className="mb-4">
@@ -400,9 +414,7 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Logout</CardTitle>
-                <CardDescription>
-                  Sign out from your account
-                </CardDescription>
+                <CardDescription>Sign out from your account</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="gap-2">

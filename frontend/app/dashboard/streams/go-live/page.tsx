@@ -67,7 +67,10 @@ export default function GoLivePage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
       <div className="max-w-2xl mx-auto py-8 px-4">
         {/* Header */}
-        <Link href="/dashboard/streams" className="inline-flex items-center gap-2 mb-8 text-primary hover:text-primary/80 transition">
+        <Link
+          href="/dashboard/streams"
+          className="inline-flex items-center gap-2 mb-8 text-primary hover:text-primary/80 transition"
+        >
           <ArrowLeft className="w-4 h-4" />
           Back to Streams
         </Link>
@@ -94,9 +97,7 @@ export default function GoLivePage() {
           <Card className="lg:col-span-2 border-border">
             <CardHeader>
               <CardTitle>Stream Details</CardTitle>
-              <CardDescription>
-                Fill in the information about your stream
-              </CardDescription>
+              <CardDescription>Fill in the information about your stream</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -200,7 +201,8 @@ export default function GoLivePage() {
                 <div className="space-y-2">
                   <p className="font-semibold text-foreground">Community Guidelines</p>
                   <p className="text-muted-foreground text-xs">
-                    Please ensure your stream follows our community guidelines. Respectful and inclusive content only.
+                    Please ensure your stream follows our community guidelines. Respectful and
+                    inclusive content only.
                   </p>
                 </div>
               </CardContent>

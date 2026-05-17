@@ -159,7 +159,9 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
       <Card className="border-border mb-6">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">👤</div>
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+              👤
+            </div>
             <button
               onClick={() => setIsOpen(true)}
               className="flex-1 px-4 py-2 bg-muted rounded-full text-left text-muted-foreground hover:bg-muted/80 transition"
@@ -196,7 +198,9 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
           />
 
           <div className="flex items-start gap-4">
-            <div className="h-12 w-12 rounded-full bg-muted flex-shrink-0 flex items-center justify-center">👤</div>
+            <div className="h-12 w-12 rounded-full bg-muted flex-shrink-0 flex items-center justify-center">
+              👤
+            </div>
             <div className="flex-1">
               <textarea
                 value={caption}
@@ -215,7 +219,9 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
               placeholder="Add hashtags: #dating #adventure #music (optional)"
               className="bg-input border-border"
             />
-            <p className="text-xs text-muted-foreground">Separate hashtags with spaces and start with #</p>
+            <p className="text-xs text-muted-foreground">
+              Separate hashtags with spaces and start with #
+            </p>
           </div>
 
           <div className="flex items-center gap-4">
@@ -265,7 +271,9 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
               disabled={createPostMutation.isPending || isUploadingPhotos}
             >
               <Image className="h-4 w-4 mr-2" />
-              {selectedPhotos.length > 0 ? `Add More Photos (${selectedPhotos.length})` : 'Add Photos'}
+              {selectedPhotos.length > 0
+                ? `Add More Photos (${selectedPhotos.length})`
+                : 'Add Photos'}
             </Button>
             <div className="flex-1" />
             <Button
@@ -283,7 +291,11 @@ export function PostCreator({ onPostCreated }: PostCreatorProps) {
               disabled={createPostMutation.isPending || isUploadingPhotos || !caption.trim()}
             >
               <Send className="h-4 w-4 mr-2" />
-              {isUploadingPhotos ? 'Uploading photos...' : createPostMutation.isPending ? 'Posting...' : 'Post'}
+              {isUploadingPhotos
+                ? 'Uploading photos...'
+                : createPostMutation.isPending
+                  ? 'Posting...'
+                  : 'Post'}
             </Button>
           </div>
         </form>

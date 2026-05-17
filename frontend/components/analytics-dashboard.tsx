@@ -180,9 +180,7 @@ export function AnalyticsDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Engagement by Type</CardTitle>
-                  <CardDescription>
-                    Distribution of user interactions this week
-                  </CardDescription>
+                  <CardDescription>Distribution of user interactions this week</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -211,9 +209,7 @@ export function AnalyticsDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Top Engagement Activities</CardTitle>
-                  <CardDescription>
-                    Most common user interactions
-                  </CardDescription>
+                  <CardDescription>Most common user interactions</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
@@ -223,7 +219,10 @@ export function AnalyticsDashboard() {
                       { activity: 'Comments', count: 5800, icon: MessageCircle },
                       { activity: 'Direct Messages', count: 4200, icon: MessageCircle },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between pb-3 border-b border-border last:border-0 last:pb-0">
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between pb-3 border-b border-border last:border-0 last:pb-0"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
                             <item.icon className="w-4 h-4 text-accent" />
@@ -244,9 +243,7 @@ export function AnalyticsDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Daily Active Users</CardTitle>
-                <CardDescription>
-                  Number of users active per day
-                </CardDescription>
+                <CardDescription>Number of users active per day</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
@@ -274,9 +271,7 @@ export function AnalyticsDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Match Conversion Funnel</CardTitle>
-                <CardDescription>
-                  User journey from profile discovery to messaging
-                </CardDescription>
+                <CardDescription>User journey from profile discovery to messaging</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
@@ -305,7 +300,10 @@ export function AnalyticsDashboard() {
                     { step: 'Match → Message', rate: '61.8%', change: '-0.5%' },
                     { step: 'Overall Conversion', rate: '24.7%', change: '+4.2%' },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between pb-4 border-b border-border last:border-0 last:pb-0">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between pb-4 border-b border-border last:border-0 last:pb-0"
+                    >
                       <span className="font-medium">{item.step}</span>
                       <div className="flex items-center gap-4">
                         <span className="text-lg font-bold">{item.rate}</span>
@@ -325,9 +323,7 @@ export function AnalyticsDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Streaming Activity</CardTitle>
-                <CardDescription>
-                  Viewer counts and stream duration trends
-                </CardDescription>
+                <CardDescription>Viewer counts and stream duration trends</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>

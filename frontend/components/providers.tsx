@@ -1,6 +1,6 @@
 /**
  * App Providers
- * 
+ *
  * Centralized place for all context providers and global hooks
  * This is a client component that wraps the app with necessary providers
  */
@@ -31,9 +31,7 @@ export function Providers({ children }: { children: ReactNode }) {
           <TokenRefreshManager />
           {children}
           {/* React Query DevTools (dev only) */}
-          {process.env.NODE_ENV === 'development' && (
-            <ReactQueryDevtools initialIsOpen={false} />
-          )}
+          {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

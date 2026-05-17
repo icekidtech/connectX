@@ -53,9 +53,7 @@ export function PostLikeList({
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredLikes = likes.filter((like) =>
-    `${like.user.firstName} ${like.user.lastName}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
+    `${like.user.firstName} ${like.user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

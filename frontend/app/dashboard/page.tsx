@@ -85,14 +85,17 @@ export default function Dashboard() {
                 {[1, 2, 3].map((post) => (
                   <div key={post} className="border-b border-border pb-6 last:border-0">
                     <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">👤</div>
+                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                        👤
+                      </div>
                       <div className="flex-1 space-y-2">
                         <div>
                           <p className="font-semibold text-foreground">User Name</p>
                           <p className="text-xs text-muted-foreground">2 hours ago</p>
                         </div>
                         <p className="text-sm text-foreground">
-                          Just had an amazing time exploring the city! Anyone want to join next time?
+                          Just had an amazing time exploring the city! Anyone want to join next
+                          time?
                         </p>
                         <div className="flex gap-2 pt-2">
                           <Button size="sm" variant="outline" className="border-border">
@@ -129,7 +132,10 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {[1, 2, 3].map((match) => (
-                  <div key={match} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                  <div
+                    key={match}
+                    className="flex items-center justify-between p-4 border border-border rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
                         👤
@@ -139,7 +145,10 @@ export default function Dashboard() {
                         <p className="text-sm text-muted-foreground">2.5 km away • 92% match</p>
                       </div>
                     </div>
-                    <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                    <Button
+                      size="sm"
+                      className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                    >
                       Like
                     </Button>
                   </div>

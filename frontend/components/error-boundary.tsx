@@ -42,43 +42,41 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         });
       }
       return (
-          <div className="w-full h-screen flex items-center justify-center bg-background p-4">
-            <Card className="w-full max-w-md">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-destructive" />
-                  <CardTitle>Something went wrong</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  {this.state.error.message}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => window.location.reload()}
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Reload
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      sessionStorage.removeItem('user');
-                      window.location.href = '/auth/login';
-                    }}
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Login
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )
+        <div className="w-full h-screen flex items-center justify-center bg-background p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+                <CardTitle>Something went wrong</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">{this.state.error.message}</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => window.location.reload()}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Reload
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    sessionStorage.removeItem('user');
+                    window.location.href = '/auth/login';
+                  }}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
     }
 
     return this.props.children;

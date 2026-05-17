@@ -35,11 +35,14 @@ export function LiveStreams() {
   const fetchLiveStreams = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/streams/live?page=1&limit=20`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || ''}/streams/live?page=1&limit=20`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
       const data = await response.json();
       setStreams(data);
     } catch (error) {
@@ -85,9 +88,7 @@ export function LiveStreams() {
             {/* Stream Meta */}
             <CardContent className="space-y-3">
               {stream.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {stream.description}
-                </p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{stream.description}</p>
               )}
 
               {/* Broadcaster */}

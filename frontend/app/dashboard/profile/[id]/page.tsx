@@ -42,7 +42,10 @@ export default function UserProfilePage() {
           'Unknown User';
 
         const age = data.profile?.dateOfBirth
-          ? Math.floor((Date.now() - new Date(data.profile.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+          ? Math.floor(
+              (Date.now() - new Date(data.profile.dateOfBirth).getTime()) /
+                (365.25 * 24 * 60 * 60 * 1000)
+            )
           : 0;
 
         const mappedProfile: UserProfile = {
@@ -157,9 +160,7 @@ export default function UserProfilePage() {
             <CardContent className="pt-6 space-y-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold text-foreground">
-                    {profile.displayName}
-                  </h1>
+                  <h1 className="text-3xl font-bold text-foreground">{profile.displayName}</h1>
                   {profile.verified && (
                     <Badge variant="outline" className="bg-blue-50 border-blue-500 text-blue-700">
                       Verified
@@ -228,16 +229,9 @@ export default function UserProfilePage() {
                     <div
                       key={photo.id}
                       className="relative aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition"
-                      onClick={() =>
-                        setCurrentPhotoIndex(profile.photos!.indexOf(photo))
-                      }
+                      onClick={() => setCurrentPhotoIndex(profile.photos!.indexOf(photo))}
                     >
-                      <Image
-                        src={photo.url}
-                        alt="Profile photo"
-                        fill
-                        className="object-cover"
-                      />
+                      <Image src={photo.url} alt="Profile photo" fill className="object-cover" />
                     </div>
                   ))}
                 </div>
@@ -268,11 +262,7 @@ export default function UserProfilePage() {
             Message
           </Button>
 
-          <Button
-            size="lg"
-            variant="outline"
-            className="w-full border-primary/50 gap-2"
-          >
+          <Button size="lg" variant="outline" className="w-full border-primary/50 gap-2">
             <Share2 className="w-5 h-5" />
             Share
           </Button>

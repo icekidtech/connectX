@@ -1,13 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -82,7 +76,8 @@ const mockReports: Report[] = [
       name: 'Alice Smith',
     },
     reason: 'harassment',
-    description: 'User sent multiple inappropriate messages and continued after being told to stop.',
+    description:
+      'User sent multiple inappropriate messages and continued after being told to stop.',
     status: 'reviewing',
     evidence: ['msg_1', 'msg_2', 'msg_3'],
     createdAt: new Date(Date.now() - 3600000),
@@ -341,9 +336,8 @@ export function ModerationDashboard() {
                           <p className="text-sm text-muted-foreground mb-2">{report.description}</p>
 
                           <p className="text-xs text-muted-foreground">
-                            Reported{' '}
-                            {Math.round((Date.now() - report.createdAt.getTime()) / 60000)} minutes
-                            ago
+                            Reported {Math.round((Date.now() - report.createdAt.getTime()) / 60000)}{' '}
+                            minutes ago
                           </p>
                         </div>
 
@@ -393,14 +387,14 @@ export function ModerationDashboard() {
                               src={verification.userAvatar}
                               alt={verification.userName}
                             />
-                            <AvatarFallback>
-                              {verification.userName.slice(0, 2)}
-                            </AvatarFallback>
+                            <AvatarFallback>{verification.userName.slice(0, 2)}</AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-semibold">{verification.userName}</p>
                             <p className="text-xs text-muted-foreground">
-                              {verification.type === 'photo' ? 'Photo Verification' : 'ID Verification'}
+                              {verification.type === 'photo'
+                                ? 'Photo Verification'
+                                : 'ID Verification'}
                             </p>
                           </div>
                         </div>

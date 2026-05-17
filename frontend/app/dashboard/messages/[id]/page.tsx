@@ -41,14 +41,11 @@ export default function ConversationPage() {
     // Load conversation
     const loadConversation = async () => {
       try {
-        const response = await fetch(
-          `/api/chat/conversations/${conversationId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
+        const response = await fetch(`/api/chat/conversations/${conversationId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
         const data = await response.json();
         setConversation(data);
       } catch (error) {
@@ -78,11 +75,7 @@ export default function ConversationPage() {
         <Card className="border-border max-w-sm">
           <CardContent className="pt-12 pb-12 text-center space-y-4">
             <p className="text-lg font-semibold text-foreground">Conversation not found</p>
-            <Button
-              onClick={() => router.back()}
-              variant="outline"
-              className="border-primary/50"
-            >
+            <Button onClick={() => router.back()} variant="outline" className="border-primary/50">
               Go Back
             </Button>
           </CardContent>
@@ -92,25 +85,18 @@ export default function ConversationPage() {
   }
 
   // Get the other participant
-  const otherParticipant = conversation.participants.find(
-    (p) => p.id !== currentUserId
-  ) || conversation.participants[0];
+  const otherParticipant =
+    conversation.participants.find((p) => p.id !== currentUserId) || conversation.participants[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
       <div className="max-w-4xl mx-auto py-4 px-4 h-screen flex flex-col">
         {/* Header with back button */}
         <div className="flex items-center gap-3 mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-          >
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold">
-            {otherParticipant.profile.displayName}
-          </h1>
+          <h1 className="text-2xl font-bold">{otherParticipant.profile.displayName}</h1>
           <Button variant="ghost" size="sm" className="ml-auto">
             <Info className="w-5 h-5" />
           </Button>

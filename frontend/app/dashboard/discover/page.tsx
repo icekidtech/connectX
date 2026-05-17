@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { DiscoverCard } from '@/components/discover-card';
 import { PreferenceEditor } from '@/components/preference-editor';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useInfiniteQueryRecommendations, useMutationLikeUser, useQueryFollowing } from '@/lib/api/matching';
+import {
+  useInfiniteQueryRecommendations,
+  useMutationLikeUser,
+  useQueryFollowing,
+} from '@/lib/api/matching';
 import type { RecommendedUser as ApiRecommendedUser } from '@/lib/api/matching';
 import { useIntersection } from '@/components/intersection-observer';
 import { useToast } from '@/hooks/use-toast';
@@ -38,9 +42,10 @@ function normalizeRecommendedUser(user: ApiRecommendedUser): RecommendedUser {
       }))
     : [];
 
-  const interests = Array.isArray(user.interests) && user.interests.length > 0
-    ? user.interests
-    : interestsFromCommon;
+  const interests =
+    Array.isArray(user.interests) && user.interests.length > 0
+      ? user.interests
+      : interestsFromCommon;
 
   const lookingFor = Array.isArray(user.lookingFor)
     ? user.lookingFor
@@ -76,23 +81,14 @@ export default function DiscoverPage() {
   const { toast } = useToast();
 
   // Fetch recommendations with pagination
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-  } = useInfiniteQueryRecommendations(filters, 20);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
+    useInfiniteQueryRecommendations(filters, 20);
 
   // Like mutation
   const likeMutation = useMutationLikeUser();
 
   // Following query
-  const {
-    data: followingData,
-    isLoading: isLoadingFollowing,
-  } = useQueryFollowing(1, 50);
+  const { data: followingData, isLoading: isLoadingFollowing } = useQueryFollowing(1, 50);
 
   // Intersection observer for loading next page
   const nextPageRef = useIntersection(
@@ -104,8 +100,8 @@ export default function DiscoverPage() {
   );
 
   // Flatten all pages into single array
-  const allUsers = (data?.pages.flatMap((page) => page.data ?? []) || []).map(
-    (user) => normalizeRecommendedUser(user),
+  const allUsers = (data?.pages.flatMap((page) => page.data ?? []) || []).map((user) =>
+    normalizeRecommendedUser(user)
   );
   const currentUser = allUsers[currentIndex];
   const followingUsers = followingData?.data || [];
@@ -151,7 +147,9 @@ export default function DiscoverPage() {
           <div>
             <h1 className="text-3xl font-bold mb-2">Discover</h1>
             <p className="text-muted-foreground">
-              {allUsers.length > 0 ? `${currentIndex + 1} of ${allUsers.length} recommendations` : 'Finding matches...'}
+              {allUsers.length > 0
+                ? `${currentIndex + 1} of ${allUsers.length} recommendations`
+                : 'Finding matches...'}
             </p>
           </div>
         </div>
@@ -229,12 +227,17 @@ export default function DiscoverPage() {
                 <p className="text-center text-muted-foreground">Loading following list...</p>
               ) : followingUsers.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-foreground font-semibold mb-2">You are not following anyone yet.</p>
-                  <p className="text-muted-foreground text-sm">Tap Love on Discover to follow users automatically.</p>
+                  <p className="text-foreground font-semibold mb-2">
+                    You are not following anyone yet.
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Tap Love on Discover to follow users automatically.
+                  </p>
                 </div>
               ) : (
                 followingUsers.map((user) => {
-                  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown User';
+                  const fullName =
+                    `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown User';
 
                   return (
                     <Link
@@ -257,7 +260,9 @@ export default function DiscoverPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-foreground truncate">{fullName}</p>
-                          <p className="text-sm text-muted-foreground truncate">{user.location || 'Unknown location'}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {user.location || 'Unknown location'}
+                          </p>
                         </div>
                         <span className="text-xs rounded-full bg-primary/10 text-primary px-2 py-1 capitalize">
                           {user.status === 'matched' ? 'Matched' : 'Following'}
@@ -281,7 +286,9 @@ export default function DiscoverPage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-semibold text-muted-foreground">Age & Location</p>
-                <p>{selectedUser.age} years old, {selectedUser.location}</p>
+                <p>
+                  {selectedUser.age} years old, {selectedUser.location}
+                </p>
               </div>
 
               {selectedUser.bio && (
@@ -296,7 +303,10 @@ export default function DiscoverPage() {
                   <p className="text-sm font-semibold text-muted-foreground mb-2">Looking For</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedUser.lookingFor.map((type) => (
-                      <span key={type} className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                      <span
+                        key={type}
+                        className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full"
+                      >
                         {type}
                       </span>
                     ))}
@@ -309,7 +319,10 @@ export default function DiscoverPage() {
                   <p className="text-sm font-semibold text-muted-foreground mb-2">Interests</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedUser.interests.map((interest) => (
-                      <span key={interest.id} className="px-2 py-1 bg-accent/10 text-accent text-xs rounded">
+                      <span
+                        key={interest.id}
+                        className="px-2 py-1 bg-accent/10 text-accent text-xs rounded"
+                      >
                         {interest.name}
                       </span>
                     ))}

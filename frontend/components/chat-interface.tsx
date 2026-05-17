@@ -82,9 +82,7 @@ export function ChatInterface({
 
     newSocket.on('messageRead', (data: { messageId: string; readBy: string }) => {
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === data.messageId ? { ...msg, readBy: data.readBy } : msg,
-        ),
+        prev.map((msg) => (msg.id === data.messageId ? { ...msg, readBy: data.readBy } : msg))
       );
     });
 
@@ -171,9 +169,7 @@ export function ChatInterface({
           )}
           {otherParticipants.length > 1 && (
             <div>
-              <h3 className="font-semibold">
-                Group Chat ({otherParticipants.length} members)
-              </h3>
+              <h3 className="font-semibold">Group Chat ({otherParticipants.length} members)</h3>
               <p className="text-xs text-muted-foreground">
                 {isConnected ? 'Connected' : 'Disconnected'}
               </p>

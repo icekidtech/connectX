@@ -29,7 +29,7 @@ export function PreferenceEditor({ onSave }: PreferenceEditorProps) {
 
   const handleToggleType = (type: string) => {
     setLookingFor((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
 

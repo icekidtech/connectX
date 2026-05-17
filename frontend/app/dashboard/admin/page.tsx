@@ -3,14 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  ShieldAlert,
-  BarChart3,
-  Users,
-  Zap,
-  Lock,
-  TrendingUp,
-} from 'lucide-react';
+import { ShieldAlert, BarChart3, Users, Zap, Lock, TrendingUp } from 'lucide-react';
 
 export default function AdminDashboard() {
   return (
@@ -33,9 +26,7 @@ export default function AdminDashboard() {
                 <ShieldAlert className="w-6 h-6 text-red-500" />
               </div>
               <CardTitle>Moderation</CardTitle>
-              <CardDescription>
-                Review reports, verify users, and manage safety
-              </CardDescription>
+              <CardDescription>Review reports, verify users, and manage safety</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -89,9 +80,7 @@ export default function AdminDashboard() {
                 <Users className="w-6 h-6 text-purple-500" />
               </div>
               <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage user accounts, roles, and permissions
-              </CardDescription>
+              <CardDescription>Manage user accounts, roles, and permissions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -117,9 +106,7 @@ export default function AdminDashboard() {
                 <Zap className="w-6 h-6 text-green-500" />
               </div>
               <CardTitle>System Health</CardTitle>
-              <CardDescription>
-                Monitor server status and system performance
-              </CardDescription>
+              <CardDescription>Monitor server status and system performance</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -145,9 +132,7 @@ export default function AdminDashboard() {
                 <Lock className="w-6 h-6 text-yellow-500" />
               </div>
               <CardTitle>Security</CardTitle>
-              <CardDescription>
-                Manage security settings and threat detection
-              </CardDescription>
+              <CardDescription>Manage security settings and threat detection</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -173,9 +158,7 @@ export default function AdminDashboard() {
                 <TrendingUp className="w-6 h-6 text-cyan-500" />
               </div>
               <CardTitle>Reports & Exports</CardTitle>
-              <CardDescription>
-                Generate business reports and export data
-              </CardDescription>
+              <CardDescription>Generate business reports and export data</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

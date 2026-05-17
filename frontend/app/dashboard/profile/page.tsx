@@ -146,10 +146,12 @@ export default function ProfilePage() {
       }
 
       const result = await response.json();
-      
+
       // Update user profile with new photo
-      setUserProfile(prev => prev ? { ...prev, photos: [...(prev.photos || []), result] } : null);
-      
+      setUserProfile((prev) =>
+        prev ? { ...prev, photos: [...(prev.photos || []), result] } : null
+      );
+
       toast({
         title: 'Success',
         description: 'Profile photo uploaded successfully',
@@ -290,9 +292,17 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                 <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center text-6xl mb-4 overflow-hidden">
                   {photoPreview ? (
-                    <img src={photoPreview} alt="Photo preview" className="w-full h-full object-cover" />
+                    <img
+                      src={photoPreview}
+                      alt="Photo preview"
+                      className="w-full h-full object-cover"
+                    />
                   ) : userProfile?.photos?.[0]?.url ? (
-                    <img src={userProfile.photos[0].url} alt="Profile" className="w-full h-full object-cover" />
+                    <img
+                      src={userProfile.photos[0].url}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     '👤'
                   )}

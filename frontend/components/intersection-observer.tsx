@@ -1,6 +1,6 @@
 /**
  * Intersection Observer Component
- * 
+ *
  * Reusable component for infinite scroll / lazy loading
  * Triggers callback when element becomes visible
  * Used by: feed, recommendations, conversations, messages
@@ -67,9 +67,7 @@ export function IntersectionObserver({
       aria-busy={isLoading}
       aria-label="Load more"
     >
-      {isLoading && (
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      )}
+      {isLoading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />}
     </div>
   );
 }

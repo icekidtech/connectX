@@ -57,9 +57,7 @@ export function CreateConversation({
     () =>
       availableUsers.filter(
         (user) =>
-          `${user.firstName} ${user.lastName}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
+          `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (user.location?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
       ),
     [availableUsers, searchQuery]
@@ -108,9 +106,7 @@ export function CreateConversation({
             <div className="space-y-0 px-1">
               {/* Recent Conversations */}
               <div className="px-3 py-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">
-                  Recent
-                </p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase">Recent</p>
               </div>
               {recentConversations.map((conv, index) => (
                 <div key={`${conv.userId}-${index}`}>
@@ -122,17 +118,13 @@ export function CreateConversation({
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={conv.avatar} alt={conv.userName} />
-                        <AvatarFallback>
-                          {conv.userName.split(' ')[0][0]}
-                        </AvatarFallback>
+                        <AvatarFallback>{conv.userName.split(' ')[0][0]}</AvatarFallback>
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm">{conv.userName}</p>
                         {conv.lastMessageTime && (
-                          <p className="text-xs text-muted-foreground">
-                            {conv.lastMessageTime}
-                          </p>
+                          <p className="text-xs text-muted-foreground">{conv.lastMessageTime}</p>
                         )}
                       </div>
 
@@ -178,9 +170,7 @@ export function CreateConversation({
                           {user.firstName} {user.lastName}
                         </p>
                         {user.location && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {user.location}
-                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{user.location}</p>
                         )}
                       </div>
 
@@ -205,11 +195,7 @@ export function CreateConversation({
 /**
  * Button to open create conversation dialog
  */
-export function CreateConversationButton({
-  onClick,
-}: {
-  onClick: () => void;
-}) {
+export function CreateConversationButton({ onClick }: { onClick: () => void }) {
   return (
     <Button onClick={onClick} className="w-full gap-2">
       <MessageCircle className="w-4 h-4" />

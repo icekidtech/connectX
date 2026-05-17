@@ -33,14 +33,8 @@ export function ConversationsList() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-  } = useInfiniteQueryConversations(20);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
+    useInfiniteQueryConversations(20);
 
   const archiveMutation = useMutationArchiveConversation();
 
@@ -131,9 +125,7 @@ export function ConversationsList() {
         ) : (
           <>
             {filteredConversations.map((conversation) => {
-              const otherParticipants = conversation.participants.filter(
-                (p) => p.id !== user?.id
-              );
+              const otherParticipants = conversation.participants.filter((p) => p.id !== user?.id);
               const lastMessage = conversation.messages[conversation.messages.length - 1];
 
               return (

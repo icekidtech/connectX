@@ -9,7 +9,8 @@ export default function MessagesPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Messages</h1>
           <p className="text-muted-foreground">
-            Stay connected with your matches. Real-time messaging with typing indicators and read receipts.
+            Stay connected with your matches. Real-time messaging with typing indicators and read
+            receipts.
           </p>
         </div>
 

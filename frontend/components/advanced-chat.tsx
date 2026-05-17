@@ -31,7 +31,7 @@ export function AdvancedChat({
   const { user } = useAuth();
   const { socket, status: wsStatus } = useWebSocket();
   const queryClient = useQueryClient();
-  
+
   const [messageText, setMessageText] = useState('');
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -43,13 +43,8 @@ export function AdvancedChat({
   }
 
   // Load infinite messages
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQueryConversationMessages(conversationId, 50);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQueryConversationMessages(conversationId, 50);
 
   // Send message mutation
   const sendMessageMutation = useMutationSendMessage(conversationId);
@@ -79,24 +74,21 @@ export function AdvancedChat({
     const handleNewMessage = (message: Message) => {
       if (message.conversationId === conversationId) {
         // Add message to cache
-        queryClient.setInfiniteQueryData(
-          ['chat', 'messages', conversationId],
-          (oldData: any) => {
-            if (!oldData) return oldData;
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page: any, index: number) => {
-                if (index === oldData.pages.length - 1) {
-                  return {
-                    ...page,
-                    data: [...page.data, message],
-                  };
-                }
-                return page;
-              }),
-            };
-          }
-        );
+        queryClient.setInfiniteQueryData(['chat', 'messages', conversationId], (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any, index: number) => {
+              if (index === oldData.pages.length - 1) {
+                return {
+                  ...page,
+                  data: [...page.data, message],
+                };
+              }
+              return page;
+            }),
+          };
+        });
         // Scroll to new message
         setTimeout(scrollToBottom, 100);
       }
@@ -111,23 +103,18 @@ export function AdvancedChat({
 
     // Listen for message read receipts
     const handleMessageRead = (data: { messageId: string; readAt: string }) => {
-      queryClient.setInfiniteQueryData(
-        ['chat', 'messages', conversationId],
-        (oldData: any) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page: any) => ({
-              ...page,
-              data: page.data.map((msg: Message) =>
-                msg.id === data.messageId
-                  ? { ...msg, isRead: true, readAt: data.readAt }
-                  : msg
-              ),
-            })),
-          };
-        }
-      );
+      queryClient.setInfiniteQueryData(['chat', 'messages', conversationId], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            data: page.data.map((msg: Message) =>
+              msg.id === data.messageId ? { ...msg, isRead: true, readAt: data.readAt } : msg
+            ),
+          })),
+        };
+      });
     };
 
     socket.on('newMessage', handleNewMessage);
@@ -187,8 +174,7 @@ export function AdvancedChat({
   };
 
   // Flatten all messages from pages
-  const messages =
-    data?.pages.flatMap((page) => page.data).reverse() ?? [];
+  const messages = data?.pages.flatMap((page) => page.data).reverse() ?? [];
 
   return (
     <Card className="h-full border-border flex flex-col">
@@ -198,12 +184,7 @@ export function AdvancedChat({
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-muted overflow-hidden relative">
               {otherUserAvatar ? (
-                <Image
-                  src={otherUserAvatar}
-                  alt={otherUserName}
-                  fill
-                  className="object-cover"
-                />
+                <Image src={otherUserAvatar} alt={otherUserName} fill className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
                   {otherUserName.charAt(0).toUpperCase()}
@@ -269,8 +250,7 @@ export function AdvancedChat({
             {messages.map((message, index) => {
               const isOwn = message.senderId === user.id;
               const showAvatar =
-                index === messages.length - 1 ||
-                messages[index + 1].senderId !== message.senderId;
+                index === messages.length - 1 || messages[index + 1].senderId !== message.senderId;
 
               return (
                 <div
@@ -298,9 +278,7 @@ export function AdvancedChat({
                   <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
                     <div
                       className={`max-w-xs px-4 py-2 rounded-lg ${
-                        isOwn
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
+                        isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
                       }`}
                     >
                       <p className="text-sm break-words">{message.content}</p>
@@ -354,10 +332,7 @@ export function AdvancedChat({
       </CardContent>
 
       {/* Message Input */}
-      <form
-        onSubmit={handleSendMessage}
-        className="border-t border-border p-4 flex gap-2"
-      >
+      <form onSubmit={handleSendMessage} className="border-t border-border p-4 flex gap-2">
         <Button
           type="button"
           variant="ghost"
@@ -387,9 +362,7 @@ export function AdvancedChat({
           type="submit"
           size="sm"
           disabled={
-            !messageText.trim() ||
-            sendMessageMutation.isPending ||
-            wsStatus !== 'connected'
+            !messageText.trim() || sendMessageMutation.isPending || wsStatus !== 'connected'
           }
           className="bg-primary hover:bg-primary/90"
         >
