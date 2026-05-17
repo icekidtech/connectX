@@ -58,22 +58,35 @@ export default function Home() {
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
                 <span className="text-balance">
-                  Connect with <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">authentic</span> people
+                  Connect with{' '}
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    authentic
+                  </span>{' '}
+                  people
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl">
-                A safe, inclusive platform for meaningful connections—whether you're looking for dating, hookups, relationships, or BDSM experiences. Identity verified and moderated for your peace of mind.
+                A safe, inclusive platform for meaningful connections—whether you're looking for
+                dating, hookups, relationships, or BDSM experiences. Identity verified and moderated
+                for your peace of mind.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/auth/signup" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">
+                <Button
+                  size="lg"
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                >
                   Create Your Profile
                 </Button>
               </Link>
               <Link href="/auth/login" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full border-primary text-primary hover:bg-primary/5">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full border-primary text-primary hover:bg-primary/5"
+                >
                   Sign In
                 </Button>
               </Link>
@@ -117,7 +130,8 @@ export default function Home() {
           <div className="text-center space-y-4 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Choose Connect?</h2>
             <p className="text-lg text-muted-foreground">
-              Built for diverse communities with safety, authenticity, and genuine connection at our core.
+              Built for diverse communities with safety, authenticity, and genuine connection at our
+              core.
             </p>
           </div>
 
@@ -130,17 +144,20 @@ export default function Home() {
               },
               {
                 title: 'Advanced Matching',
-                description: 'Our algorithm matches you based on interests, preferences, and compatibility',
+                description:
+                  'Our algorithm matches you based on interests, preferences, and compatibility',
                 icon: '✨',
               },
               {
                 title: 'Inclusive Community',
-                description: 'Safe space for dating, hookups, relationships, BDSM, and everything in between',
+                description:
+                  'Safe space for dating, hookups, relationships, BDSM, and everything in between',
                 icon: '🌈',
               },
               {
                 title: 'Real-Time Chat',
-                description: 'Seamless messaging with typing indicators, read receipts, and media sharing',
+                description:
+                  'Seamless messaging with typing indicators, read receipts, and media sharing',
                 icon: '💬',
               },
               {
@@ -150,7 +167,8 @@ export default function Home() {
               },
               {
                 title: 'Content Moderation',
-                description: 'NSFW tags, content filtering, and community guidelines keep everyone safe',
+                description:
+                  'NSFW tags, content filtering, and community guidelines keep everyone safe',
                 icon: '👁️',
               },
             ].map((feature, i) => (
@@ -174,10 +192,14 @@ export default function Home() {
             Ready to find your connection?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of authentic people looking for meaningful connections. Your journey starts here.
+            Join thousands of authentic people looking for meaningful connections. Your journey
+            starts here.
           </p>
           <Link href="/auth/signup">
-            <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8">
+            <Button
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8"
+            >
               Start Connecting Today
             </Button>
           </Link>
@@ -204,7 +226,10 @@ export default function Home() {
                 <ul className="space-y-2">
                   {col.links.map((link) => (
                     <li key={link}>
-                      <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition">
+                      <a
+                        href="#"
+                        className="text-sm text-muted-foreground hover:text-foreground transition"
+                      >
                         {link}
                       </a>
                     </li>
@@ -216,9 +241,15 @@ export default function Home() {
           <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
             <p>&copy; 2026 Connect. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-foreground transition">Twitter</a>
-              <a href="#" className="hover:text-foreground transition">Instagram</a>
-              <a href="#" className="hover:text-foreground transition">Discord</a>
+              <a href="#" className="hover:text-foreground transition">
+                Twitter
+              </a>
+              <a href="#" className="hover:text-foreground transition">
+                Instagram
+              </a>
+              <a href="#" className="hover:text-foreground transition">
+                Discord
+              </a>
             </div>
           </div>
         </div>
