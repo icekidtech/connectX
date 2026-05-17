@@ -28,7 +28,7 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await signupMutation.mutateAsync(formData);
       // Mutation handles redirect via useRouter.push('/dashboard')
@@ -152,7 +152,11 @@ export default function SignUp() {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full border-border" disabled={signupMutation.isPending}>
+            <Button
+              variant="outline"
+              className="w-full border-border"
+              disabled={signupMutation.isPending}
+            >
               Sign up with Google
             </Button>
 

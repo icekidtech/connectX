@@ -26,7 +26,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await loginMutation.mutateAsync(formData);
       // Mutation handles redirect via useRouter.push('/dashboard')
@@ -58,9 +58,7 @@ export default function Login() {
         <Card className="border-border">
           <CardHeader className="space-y-3 text-center">
             <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
-            <CardDescription>
-              Sign in to your account to continue connecting
-            </CardDescription>
+            <CardDescription>Sign in to your account to continue connecting</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -120,7 +118,11 @@ export default function Login() {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full border-border" disabled={loginMutation.isPending}>
+            <Button
+              variant="outline"
+              className="w-full border-border"
+              disabled={loginMutation.isPending}
+            >
               Sign in with Google
             </Button>
 
